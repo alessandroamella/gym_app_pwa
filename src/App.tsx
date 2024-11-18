@@ -10,18 +10,18 @@ import { useEffect } from 'react';
 import axios from 'axios';
 import { WorkoutScreen } from './screens/WorkoutScreen';
 import { EditProfileScreen } from './screens/EditProfileScreen';
+import Layout from './components/Layout';
 
 const theme = createTheme({
   // Add your theme customizations here if needed
 });
 
 const App = () => {
-  const { setUser, logout } = useAuthStore();
+  const { setUser, logout, token } = useAuthStore();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('token');
         if (token) {
           const response = await axios.get('/v1/auth/profile', {
             headers: { Authorization: `Bearer ${token}` },
@@ -35,7 +35,7 @@ const App = () => {
     };
 
     checkAuth();
-  }, [setUser, logout]);
+  }, [setUser, logout, token]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -47,7 +47,9 @@ const App = () => {
             path="/"
             element={
               <ProtectedRoute>
-                <FeedScreen />
+                <Layout>
+                  <FeedScreen />
+                </Layout>
               </ProtectedRoute>
             }
           />
@@ -55,7 +57,9 @@ const App = () => {
             path="/add-workout"
             element={
               <ProtectedRoute>
-                <AddWorkoutScreen />
+                <Layout>
+                  <AddWorkoutScreen />
+                </Layout>
               </ProtectedRoute>
             }
           />
@@ -63,7 +67,9 @@ const App = () => {
             path="/workout/:id"
             element={
               <ProtectedRoute>
-                <WorkoutScreen />
+                <Layout>
+                  <WorkoutScreen />
+                </Layout>
               </ProtectedRoute>
             }
           />
@@ -71,7 +77,9 @@ const App = () => {
             path="/edit-profile"
             element={
               <ProtectedRoute>
-                <EditProfileScreen />
+                <Layout>
+                  <EditProfileScreen />
+                </Layout>
               </ProtectedRoute>
             }
           />

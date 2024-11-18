@@ -10,7 +10,7 @@ export const AuthScreen = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
-  const { setUser } = useAuthStore();
+  const { setUser, setToken } = useAuthStore();
   const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -21,7 +21,7 @@ export const AuthScreen = () => {
         password,
       });
 
-      localStorage.setItem('token', response.data.token);
+      setToken(response.data.token);
       const profileResponse = await axios.get('/v1/auth/profile', {
         headers: { Authorization: `Bearer ${response.data.token}` },
       });

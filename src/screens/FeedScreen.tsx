@@ -6,18 +6,19 @@ import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import { WorkoutCard } from '../components/WorkoutCard';
 import { GetAllWorkoutsResponse } from '../types';
+import { useAuthStore } from '../store/authStore';
 
 export const FeedScreen: React.FC = () => {
   const [workouts, setWorkouts] = useState<GetAllWorkoutsResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { token } = useAuthStore();
 
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
         const response = await axios.get('/v1/workout', {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -34,7 +35,7 @@ export const FeedScreen: React.FC = () => {
     };
 
     fetchWorkouts();
-  }, []);
+  }, [token]);
 
   if (loading) {
     return <Typography variant="body1">Loading workouts...</Typography>;

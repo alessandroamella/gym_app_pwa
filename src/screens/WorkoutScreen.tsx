@@ -36,13 +36,12 @@ export const WorkoutScreen: React.FC = () => {
   const [error, setError] = useState('');
   const [commentText, setCommentText] = useState('');
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
-  const auth = useAuthStore();
+  const { token, user } = useAuthStore();
 
   useEffect(() => {
     const fetchWorkout = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
 
         if (!token) {
           throw new Error('Not logged in.');
@@ -66,7 +65,7 @@ export const WorkoutScreen: React.FC = () => {
     if (id) {
       fetchWorkout();
     }
-  }, [id]);
+  }, [id, token]);
 
   const handleGoBack = () => {
     navigate('/');
@@ -75,7 +74,6 @@ export const WorkoutScreen: React.FC = () => {
   const handleCommentSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
-      const token = localStorage.getItem('token');
       await axios.post(
         `/v1/comment/workout/${id}`,
         { text: commentText },
@@ -98,7 +96,6 @@ export const WorkoutScreen: React.FC = () => {
 
   const handleDeleteWorkout = async () => {
     try {
-      const token = localStorage.getItem('token');
       await axios.delete(`/v1/workout/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -137,7 +134,7 @@ export const WorkoutScreen: React.FC = () => {
         <Typography variant="h5">Workout Details</Typography>
 
         {/* Delete button only if it's the user's workout */}
-        {workout.user.id === auth.user?.id && (
+        {workout.user.id === user?.id && (
           <IconButton
             onClick={() => setDeleteConfirmationOpen(true)}
             color="error"

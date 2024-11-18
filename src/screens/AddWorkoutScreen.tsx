@@ -3,18 +3,19 @@ import { Button, TextField, Box } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { BaseWorkout } from '../types';
+import { useAuthStore } from '../store/authStore';
 
 export const AddWorkoutScreen: React.FC = () => {
   const [duration, setDuration] = useState<number | undefined>();
   const [notes, setNotes] = useState('');
   const [file, setFile] = useState<File | null>(null); // For file uploads
   const navigate = useNavigate();
+  const { token } = useAuthStore();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     try {
-      const token = localStorage.getItem('token');
       // const formData = new FormData();
       // formData.append('durationMin', duration!.toString()); // Append duration
       // formData.append('notes', notes);

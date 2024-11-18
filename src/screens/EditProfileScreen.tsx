@@ -18,7 +18,7 @@ export const EditProfileScreen: React.FC = () => {
   const [profilePic, setProfilePic] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false); // State for success message
-  const auth = useAuthStore();
+  const { token, user, setUser } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSave = async () => {
@@ -26,8 +26,6 @@ export const EditProfileScreen: React.FC = () => {
     setSuccess(false); // Reset success message
 
     try {
-      const token = localStorage.getItem('token');
-
       // Update profile details
       if (username || password) {
         await axios.patch(
@@ -57,7 +55,7 @@ export const EditProfileScreen: React.FC = () => {
       const profileResponse = await axios.get('/v1/auth/profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      auth.setUser(profileResponse.data);
+      setUser(profileResponse.data);
 
       setTimeout(() => {
         navigate('/', { replace: true });
@@ -99,8 +97,8 @@ export const EditProfileScreen: React.FC = () => {
       {/* Current Profile Picture */}
       <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
         <Avatar
-          alt={auth.user?.username || 'User'}
-          src={auth.user?.profilePicUrl || ''}
+          alt={user?.username || 'User'}
+          src={user?.profilePicUrl || ''}
           sx={{ width: 100, height: 100 }}
         />
       </Box>
