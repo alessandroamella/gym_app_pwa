@@ -11,26 +11,78 @@ import {
   Box,
 } from '@mui/material';
 import { formatDistanceToNow } from 'date-fns';
-import { GetAllWorkoutsResponse, GetWorkoutResponse } from '../types';
+import {
+  BaseWorkout,
+  GetAllWorkoutsResponse,
+  GetWorkoutResponse,
+} from '../types';
 import { Link } from 'react-router-dom';
+import Slider from 'react-slick'; // Import react-slick
+import 'slick-carousel/slick/slick.css'; // Import slick-carousel styles
+import 'slick-carousel/slick/slick-theme.css';
 
 interface WorkoutCardProps {
   workout: GetAllWorkoutsResponse;
 }
 
 export const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+  };
+
   return (
     <Card sx={{ marginBottom: '1rem', maxWidth: 400 }}>
-      {' '}
-      {/* Add maxWidth */}
       <CardActionArea component={Link} to={`/workout/${workout.id}`}>
         {workout.media && workout.media.length > 0 && (
-          <CardMedia
-            component="img"
-            height="200" // Adjust as needed
-            image={workout.media[0].url} // Display the first image
-            alt={`Workout media for ${workout.id}`}
-          />
+          <Box>
+            {workout.media.length > 1 ? (
+              <Slider {...sliderSettings}>
+                {workout.media.map((media, index) => (
+                  <Box key={index}>
+                    {media.mime.includes('image') ? (
+                      <CardMedia
+                        component="img"
+                        height="200"
+                        image={media.url}
+                        alt={`Media ${index + 1} for workout ${workout.id}`}
+                      />
+                    ) : (
+                      <CardMedia
+                        component="video"
+                        height="200"
+                        src={media.url}
+                        controls
+                      />
+                    )}
+                  </Box>
+                ))}
+              </Slider>
+            ) : (
+              workout.media.map((media, index) => (
+                <Box key={index}>
+                  {media.mime.includes('image') ? (
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={media.url}
+                      alt={`Media ${index + 1} for workout ${workout.id}`}
+                    />
+                  ) : (
+                    <CardMedia
+                      component="video"
+                      height="200"
+                      src={media.url}
+                      controls
+                    />
+                  )}
+                </Box>
+              ))
+            )}
+          </Box>
         )}
         <CardContent>
           <Box
@@ -69,56 +121,55 @@ export const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
           </Typography>
 
           <List>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {(workout as any as GetWorkoutResponse).comments?.map((comment) => (
-              <ListItem
-                key={comment.id}
-                sx={{
-                  padding: '0', // Reduce default padding
-                  display: 'flex',
-                  alignItems: 'start',
-                  borderBottom: '1px solid #eee', // Add a separator line
-                }}
-              >
-                {/* Left side for avatar and username */}
-                {comment.user.profilePicUrl && (
-                  <Box
-                    sx={{
-                      mr: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'start',
-                    }}
-                  >
-                    <Avatar
-                      src={comment.user.profilePicUrl}
-                      sx={{ width: 24, height: 24, mb: 0.5 }}
-                    />
-                  </Box>
-                )}
-
-                {/* Right side for comment text and timestamp */}
-                <Box>
-                  <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
-                    <Typography
-                      variant="body2"
-                      component="span"
-                      fontWeight="medium"
+            {(workout as BaseWorkout as GetWorkoutResponse).comments?.map(
+              (comment) => (
+                <ListItem
+                  key={comment.id}
+                  sx={{
+                    padding: '0',
+                    display: 'flex',
+                    alignItems: 'start',
+                    borderBottom: '1px solid #eee',
+                  }}
+                >
+                  {comment.user.profilePicUrl && (
+                    <Box
+                      sx={{
+                        mr: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'start',
+                      }}
                     >
-                      {comment.user.username}
-                    </Typography>
-                    <Typography variant="body2" component="span" ml={1}>
-                      {comment.text}
+                      <Avatar
+                        src={comment.user.profilePicUrl}
+                        sx={{ width: 24, height: 24, mb: 0.5 }}
+                      />
+                    </Box>
+                  )}
+
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+                      <Typography
+                        variant="body2"
+                        component="span"
+                        fontWeight="medium"
+                      >
+                        {comment.user.username}
+                      </Typography>
+                      <Typography variant="body2" component="span" ml={1}>
+                        {comment.text}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" color="textSecondary">
+                      {formatDistanceToNow(new Date(comment.createdAt), {
+                        addSuffix: true,
+                      })}
                     </Typography>
                   </Box>
-                  <Typography variant="caption" color="textSecondary">
-                    {formatDistanceToNow(new Date(comment.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </Typography>
-                </Box>
-              </ListItem>
-            ))}
+                </ListItem>
+              ),
+            )}
           </List>
         </CardContent>
       </CardActionArea>

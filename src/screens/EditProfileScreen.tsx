@@ -11,6 +11,7 @@ import {
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { Profile } from '../types';
 
 export const EditProfileScreen: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -52,7 +53,7 @@ export const EditProfileScreen: React.FC = () => {
       // if successful, redirect to the feed or show a success message
       setSuccess(true);
       // Update Zustand store after successful update.
-      const profileResponse = await axios.get('/v1/auth/profile', {
+      const profileResponse = await axios.get<Profile>('/v1/auth/profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(profileResponse.data);

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { WorkoutCard } from '../components/WorkoutCard';
 import { GetAllWorkoutsResponse } from '../types';
 import { useAuthStore } from '../store/authStore';
+import ProfileCard from '../components/ProfileCard';
 
 export const FeedScreen: React.FC = () => {
   const [workouts, setWorkouts] = useState<GetAllWorkoutsResponse[]>([]);
@@ -51,7 +52,7 @@ export const FeedScreen: React.FC = () => {
 
   return (
     <Box sx={{ position: 'relative' }}>
-      {' '}
+      <ProfileCard />
       {/* Container for relative positioning */}
       {/* Workout List */}
       {workouts.map((workout) => (

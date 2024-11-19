@@ -1,9 +1,17 @@
 // User types
-export interface WorkoutUser {
+export interface Profile {
   id: number;
   username: string;
-  profilePicUrl: string | null;
+  points: number;
+  profilePicUrl?: string;
+  createdAt: Date;
+  _count: {
+    workouts: number;
+    comments: number;
+  };
 }
+
+export type WorkoutUser = Pick<Profile, 'id' | 'username' | 'profilePicUrl'>;
 
 export interface CommentUser extends WorkoutUser {}
 

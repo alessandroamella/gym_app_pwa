@@ -81,7 +81,8 @@ export const AddWorkoutScreen: React.FC = () => {
         rows={4}
         onChange={(e) => setNotes(e.target.value)}
       />
-      <input type="file" onChange={handleFileChange} />
+      {/* pic and vids */}
+      <input type="file" onChange={handleFileChange} accept="image/*,video/*" />
       <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
         Add Workout
       </Button>

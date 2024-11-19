@@ -1,33 +1,14 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import Cookies from 'js-cookie';
+import { Profile } from '../types';
 
 interface AuthState {
   token: string | null;
-  user: { id: number; username: string; profilePicUrl: string | null } | null;
+  user: Profile | null;
   setToken: (token: string | null) => void;
-  setUser: (user: {
-    id: number;
-    username: string;
-    profilePicUrl: string | null;
-  }) => void;
+  setUser: (user: Profile) => void;
   logout: () => void;
 }
-
-// Custom storage object for cookies
-const cookieStorage = {
-  getItem: (name: string): string | null => {
-    const value = Cookies.get(name);
-    return value ? JSON.parse(value) : null;
-  },
-  setItem: (name: string, value: string): void => {
-    // Set cookie with 7 days expiry - adjust as needed
-    Cookies.set(name, value, { expires: 7, sameSite: 'strict' });
-  },
-  removeItem: (name: string): void => {
-    Cookies.remove(name);
-  },
-};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -41,9 +22,8 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'gym-auth', // name of the cookie
-      storage: createJSONStorage(() => cookieStorage),
-      // Only persist these fields
+      name: 'gym-auth', // key for localStorage
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         token: state.token,
         user: state.user,
