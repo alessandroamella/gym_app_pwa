@@ -39,6 +39,7 @@ export interface BaseWorkout {
   updatedAt: Date;
   user: WorkoutUser;
   media: WorkoutMedia[];
+  points: number;
   // Add any other fields that are in GetAllWorkoutsResponseDto
 }
 

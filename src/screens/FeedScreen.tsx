@@ -1,47 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, FC } from 'react';
 import axios from 'axios';
 import { Typography, Fab, Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WorkoutCard } from '../components/WorkoutCard';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import WorkoutCard from '../components/WorkoutCard';
 import { GetAllWorkoutsResponse } from '../types';
 import { useAuthStore } from '../store/authStore';
 import ProfileCard from '../components/ProfileCard';
 import SplashScreen from '../components/SplashScreen';
 import { useSplashStore } from '../store/splashStore';
 import { useTranslation } from 'react-i18next';
+import LoadingSpinner from '../components/LoadingSpinner';
 
-export const FeedScreen: React.FC = () => {
+const ITEMS_PER_PAGE = 10;
+
+const FeedScreen: FC = () => {
   const [workouts, setWorkouts] = useState<GetAllWorkoutsResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
+
   const navigate = useNavigate();
   const { token } = useAuthStore();
+  const { t } = useTranslation();
 
   const splash = useSplashStore((state) => state.splash);
   const setSplash = useSplashStore((state) => state.setSplash);
 
-  useEffect(() => {
-    const fetchWorkouts = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/v1/workout', {
+  const fetchWorkouts = async (pageNumber: number) => {
+    try {
+      const skip = pageNumber * ITEMS_PER_PAGE;
+      const response = await axios.get(
+        `/v1/workout?limit=${ITEMS_PER_PAGE}&skip=${skip}`,
+        {
           headers: { Authorization: `Bearer ${token}` },
-        });
-        setWorkouts(response.data);
-      } catch (err) {
-        if (axios.isAxiosError(err)) {
-          setError(err?.response?.data?.message || err.message);
-        } else {
-          setError('An unknown error occurred.');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+        },
+      );
 
-    fetchWorkouts();
+      const newWorkouts = response.data;
+      if (pageNumber === 0) {
+        setWorkouts(newWorkouts);
+      } else {
+        setWorkouts((prev) => [...prev, ...newWorkouts]);
+      }
+
+      setHasMore(newWorkouts.length === ITEMS_PER_PAGE);
+      setError('');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err?.response?.data?.message || err.message);
+      } else {
+        setError('An unknown error occurred.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+    fetchWorkouts(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const mainContentVariants = {
@@ -78,18 +102,14 @@ export const FeedScreen: React.FC = () => {
     },
   };
 
-  const { t } = useTranslation();
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchWorkouts(nextPage);
+  };
 
   if (loading && !splash) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
-        <Typography variant="body1">{t('app.loadingWorkouts')}</Typography>
-      </motion.div>
-    );
+    return <LoadingSpinner message={t('app.loadingWorkouts')} />;
   }
 
   if (error) {
@@ -123,19 +143,31 @@ export const FeedScreen: React.FC = () => {
               <ProfileCard />
             </motion.div>
 
-            {workouts.map((workout) => (
-              <motion.div key={workout.id} variants={itemVariants}>
-                <WorkoutCard workout={workout} />
-              </motion.div>
-            ))}
-
-            {workouts.length === 0 && (
-              <motion.div variants={itemVariants}>
-                <Typography variant="body1">
-                  {t('app.noWorkoutsFound')}
+            <InfiniteScroll
+              dataLength={workouts.length}
+              next={loadMore}
+              hasMore={hasMore}
+              loader={<LoadingSpinner message={t('app.loadingMoreWorkouts')} />}
+              endMessage={
+                <Typography variant="body2" textAlign="center" sx={{ my: 2 }}>
+                  {t('app.noMoreWorkouts')}
                 </Typography>
-              </motion.div>
-            )}
+              }
+            >
+              {workouts.map((workout) => (
+                <motion.div key={workout.id} variants={itemVariants}>
+                  <WorkoutCard workout={workout} />
+                </motion.div>
+              ))}
+
+              {workouts.length === 0 && (
+                <motion.div variants={itemVariants}>
+                  <Typography variant="body1">
+                    {t('app.noWorkoutsFound')}
+                  </Typography>
+                </motion.div>
+              )}
+            </InfiniteScroll>
 
             <motion.div
               initial={{ scale: 0 }}
@@ -161,3 +193,5 @@ export const FeedScreen: React.FC = () => {
     </AnimatePresence>
   );
 };
+
+export default FeedScreen;

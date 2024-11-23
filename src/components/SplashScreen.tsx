@@ -1,13 +1,18 @@
 import { motion } from 'framer-motion';
+import useDarkModeStore from '../store/darkModeStore';
 
 const SplashScreen = ({
   onAnimationComplete,
 }: {
   onAnimationComplete: () => void;
 }) => {
+  const darkMode = useDarkModeStore((state) => state.darkMode);
+
   return (
     <motion.div
-      className="flex -mt-20 justify-center items-center h-screen bg-gray-100"
+      className={`flex -mt-20 justify-center items-center h-screen ${
+        darkMode ? 'bg-gray-900' : 'bg-gray-100'
+      }`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, scale: 1.1 }}
       exit={{ opacity: 0 }}

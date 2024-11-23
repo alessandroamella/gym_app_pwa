@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { FC, ReactNode, useState } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -21,30 +21,33 @@ import {
 import { SwipeableDrawer } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import useDarkModeStore from '../store/darkModeStore';
+import { useTranslation } from 'react-i18next';
 
 interface LayoutProps {
-  children: React.ReactNode;
-  darkMode: boolean;
-  setDarkMode: (darkMode: boolean) => void;
+  children: ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, darkMode, setDarkMode }) => {
+const Layout: FC<LayoutProps> = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { user } = useAuthStore();
 
+  const darkMode = useDarkModeStore((state) => state.darkMode);
+  const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
+
   const menuItems = user
     ? [
-        { text: 'Feed', icon: <HomeIcon />, href: '/' },
-        { text: 'Edit Profile', icon: <EditIcon />, href: '/edit-profile' },
-        { text: 'Logout', icon: <LogoutIcon />, href: '/logout' },
+        { text: 'feed', icon: <HomeIcon />, href: '/' },
+        { text: 'editProfile', icon: <EditIcon />, href: '/edit-profile' },
+        { text: 'logout', icon: <LogoutIcon />, href: '/logout' },
       ]
-    : [{ text: 'Login', icon: <LoginIcon />, href: '/auth' }];
+    : [{ text: 'login', icon: <LoginIcon />, href: '/auth' }];
 
-  const toggleTheme = () => setDarkMode(!darkMode);
+  const { t } = useTranslation();
 
   const navigationList = (
     <Box>
-      <List>
+      <List sx={{ pr: 2 }}>
         {menuItems.map((item) => (
           <Link
             key={item.text}
@@ -54,7 +57,7 @@ const Layout: React.FC<LayoutProps> = ({ children, darkMode, setDarkMode }) => {
           >
             <ListItem>
               <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
+              <ListItemText primary={t(`navigation.${item.text}`)} />
             </ListItem>
           </Link>
         ))}
@@ -74,12 +77,7 @@ const Layout: React.FC<LayoutProps> = ({ children, darkMode, setDarkMode }) => {
             <MenuIcon />
           </IconButton>
           <div className="grow" />
-          {/* <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-              Gym App
-            </Link>
-          </Typography> */}
-          <IconButton color="inherit" onClick={toggleTheme}>
+          <IconButton color="inherit" onClick={toggleDarkMode}>
             {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
         </Toolbar>

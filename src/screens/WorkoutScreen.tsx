@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, FC, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Slider from 'react-slick';
@@ -39,7 +39,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import FormatDistance from '../components/FormatDistance';
 
-export const WorkoutScreen: React.FC = () => {
+const WorkoutScreen: FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [workout, setWorkout] = useState<GetWorkoutResponse | null>(null);
@@ -76,7 +76,7 @@ export const WorkoutScreen: React.FC = () => {
 
   const handleGoBack = () => navigate('/');
 
-  const handleCommentSubmit = async (event: React.FormEvent) => {
+  const handleCommentSubmit = async (event: FormEvent) => {
     event.preventDefault();
     try {
       await axios.post(
@@ -167,8 +167,8 @@ export const WorkoutScreen: React.FC = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <Box sx={{ mx: 'auto', p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+      <Box sx={{ mx: 'auto', py: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, px: 1 }}>
           <IconButton onClick={handleGoBack} sx={{ mr: 1 }}>
             <ArrowBack />
           </IconButton>
@@ -190,7 +190,11 @@ export const WorkoutScreen: React.FC = () => {
           )}
         </Box>
 
-        <Card component={motion.div} whileHover={{ y: -5 }} sx={{ mb: 3 }}>
+        <Card
+          component={motion.div}
+          whileHover={{ y: -5 }}
+          sx={{ mb: 3, borderRadius: 0 }}
+        >
           {workout.media && workout.media.length > 0 && (
             <Box sx={{ position: 'relative' }}>
               <Slider
@@ -209,157 +213,163 @@ export const WorkoutScreen: React.FC = () => {
           )}
 
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Avatar
-                alt={workout.user.username}
-                src={workout.user.profilePicUrl || ''}
-                sx={{ width: 56, height: 56, mr: 2 }}
-              />
-              <Box>
-                <Typography variant="h6">{workout.user.username}</Typography>
-                <Typography variant="caption" color="textSecondary">
-                  <FormatDistance
-                    date={new Date(workout.createdAt)}
-                    addSuffix
-                  />
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <AccessTime sx={{ mr: 1 }} />
-              <Typography variant="h6">
-                {workout.durationMin} minutes
-              </Typography>
-            </Box>
-
-            {workout.notes && (
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Notes
-                </Typography>
-                <Typography variant="body1">{workout.notes}</Typography>
-              </Box>
-            )}
-
-            <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-              <IconButton
-                onClick={() => setLiked(!liked)}
-                color={liked ? 'primary' : 'default'}
-              >
-                <Favorite />
-              </IconButton>
-              <IconButton>
-                <Share />
-              </IconButton>
-            </Box>
-
-            <Box sx={{ mt: 3 }}>
-              <Typography
-                variant="h6"
-                sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
-              >
-                <CommentIcon sx={{ mr: 1 }} />
-                {t('comment.comments', { count: workout.comments.length })}
-              </Typography>
-
-              <Box
-                component="form"
-                onSubmit={handleCommentSubmit}
-                sx={{ display: 'flex', gap: 1 }}
-              >
-                <TextField
-                  label={t('comment.addComment')}
-                  fullWidth
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  size="small"
+            <Box sx={{ px: 1, mt: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Avatar
+                  alt={workout.user.username}
+                  src={workout.user.profilePicUrl || ''}
+                  sx={{ width: 56, height: 56, mr: 2 }}
                 />
+                <Box>
+                  <Typography variant="h6">{workout.user.username}</Typography>
+                  <Typography variant="caption" color="textSecondary">
+                    <FormatDistance
+                      date={new Date(workout.createdAt)}
+                      addSuffix
+                    />
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <AccessTime sx={{ mr: 1 }} />
+                <Typography variant="h6">
+                  {workout.durationMin} minutes
+                </Typography>
+              </Box>
+
+              {workout.notes && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
+                    Notes
+                  </Typography>
+                  <Typography variant="body1">{workout.notes}</Typography>
+                </Box>
+              )}
+
+              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                 <IconButton
-                  type="submit"
-                  color="primary"
-                  disabled={!commentText}
-                  sx={{ alignSelf: 'center' }}
+                  onClick={() => setLiked(!liked)}
+                  color={liked ? 'primary' : 'default'}
                 >
-                  <SendIcon />
+                  <Favorite />
+                </IconButton>
+                <IconButton>
+                  <Share />
                 </IconButton>
               </Box>
 
-              <List className="mt-4">
-                <div className="h-2" />
-                {workout.comments.map((comment) => (
-                  <ListItem
-                    key={comment.id}
-                    component={motion.div}
-                    whileHover={{ x: 5 }}
-                    sx={{
-                      bgcolor: 'background.paper',
-                      mt: -2,
-                      mb: -2,
-                      borderRadius: 1,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      p: 1,
-                    }}
+              <Box sx={{ mt: 3 }}>
+                <Typography
+                  variant="h6"
+                  sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
+                >
+                  <CommentIcon sx={{ mr: 1 }} />
+                  {t('comment.comments', { count: workout.comments.length })}
+                </Typography>
+
+                <Box
+                  component="form"
+                  onSubmit={handleCommentSubmit}
+                  sx={{ display: 'flex', gap: 1 }}
+                >
+                  <TextField
+                    label={t('comment.addComment')}
+                    fullWidth
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    size="small"
+                  />
+                  <IconButton
+                    type="submit"
+                    color="primary"
+                    disabled={!commentText}
+                    sx={{ alignSelf: 'center' }}
                   >
-                    <ListItemText
-                      primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar
-                            alt={comment.user.username}
-                            src={comment.user.profilePicUrl || ''}
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              mr: 1,
-                              marginTop: '1rem',
-                            }}
-                          />
-                          <Typography variant="body2" fontWeight="medium">
-                            {comment.user.username}
-                          </Typography>
-                          <div className="w-2" />
-                          <Typography
-                            sx={{ marginTop: '1px' }}
-                            variant="caption"
-                            color="textSecondary"
-                          >
-                            <FormatDistance
-                              date={new Date(comment.createdAt)}
-                              addSuffix
+                    <SendIcon />
+                  </IconButton>
+                </Box>
+
+                <List className="mt-4">
+                  <div className="h-2" />
+                  {workout.comments.map((comment) => (
+                    <ListItem
+                      key={comment.id}
+                      component={motion.div}
+                      whileHover={{ x: 5 }}
+                      sx={{
+                        bgcolor: 'background.paper',
+                        mt: -2,
+                        mb: -2,
+                        borderRadius: 1,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        p: 1,
+                      }}
+                    >
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Avatar
+                              alt={comment.user.username}
+                              src={comment.user.profilePicUrl || ''}
+                              sx={{
+                                width: 32,
+                                height: 32,
+                                mr: 1,
+                                marginTop: '1rem',
+                              }}
                             />
-                          </Typography>
-                        </Box>
-                      }
-                      secondary={
-                        <>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              p: 0.5,
-                              marginTop: '-1rem',
-                              marginLeft: '2.28rem',
-                            }}
-                          >
-                            {comment.text}
-                          </Typography>
-                        </>
-                      }
-                    />
-                    {comment.user.id === user?.id && (
-                      <IconButton
-                        edge="end"
-                        aria-label="delete"
-                        onClick={() => setDeleteCommentId(comment.id)}
-                        sx={{ ml: 1 }}
-                        size="small"
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                  </ListItem>
-                ))}
-              </List>
+                            <Typography variant="body2" fontWeight="medium">
+                              {comment.user.username}
+                            </Typography>
+                            <div className="w-2" />
+                            <Typography
+                              sx={{ marginTop: '1px' }}
+                              variant="caption"
+                              color="textSecondary"
+                            >
+                              <FormatDistance
+                                date={new Date(comment.createdAt)}
+                                addSuffix
+                              />
+                            </Typography>
+                          </Box>
+                        }
+                        secondary={
+                          <>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                p: 0.5,
+                                marginTop: '-1rem',
+                                marginLeft: '2.28rem',
+                              }}
+                            >
+                              {comment.text}
+                            </Typography>
+                          </>
+                        }
+                      />
+                      {comment.user.id === user?.id && (
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={() => setDeleteCommentId(comment.id)}
+                          sx={{ ml: 1 }}
+                          size="small"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
             </Box>
           </CardContent>
         </Card>
@@ -433,3 +443,5 @@ export const WorkoutScreen: React.FC = () => {
     </motion.div>
   );
 };
+
+export default WorkoutScreen;

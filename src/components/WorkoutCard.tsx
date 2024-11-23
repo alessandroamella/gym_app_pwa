@@ -1,25 +1,22 @@
-import React from 'react';
+import { FC } from 'react';
 import {
   Card,
   CardActionArea,
   CardContent,
   CardMedia,
   Typography,
-  List,
-  ListItem,
   Avatar,
   Box,
+  useTheme,
 } from '@mui/material';
-import {
-  BaseWorkout,
-  GetAllWorkoutsResponse,
-  GetWorkoutResponse,
-} from '../types';
 import { Link } from 'react-router-dom';
-import Slider from 'react-slick'; // Import react-slick
-import 'slick-carousel/slick/slick.css'; // Import slick-carousel styles
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import FormatDistance from './FormatDistance';
+import { GetAllWorkoutsResponse } from '../types';
+import { useTranslation } from 'react-i18next';
+import { AccessTime, Star } from '@mui/icons-material';
 
 interface WorkoutCardProps {
   workout: GetAllWorkoutsResponse;
@@ -33,10 +30,30 @@ const sliderSettings = {
   slidesToScroll: 1,
 };
 
-export const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
+const WorkoutCard: FC<WorkoutCardProps> = ({ workout }) => {
+  const theme = useTheme();
+
+  const { t } = useTranslation();
+
   return (
-    <Card sx={{ marginBottom: '1rem' }}>
-      <CardActionArea component={Link} to={`/workout/${workout.id}`}>
+    <Card
+      sx={{
+        marginBottom: 3,
+        borderRadius: 0,
+        boxShadow: 3,
+        backgroundColor: theme.palette.background.paper,
+        overflow: 'hidden',
+      }}
+    >
+      <CardActionArea
+        component={Link}
+        to={`/workout/${workout.id}`}
+        sx={{
+          '&:hover': {
+            boxShadow: 4,
+          },
+        }}
+      >
         {workout.media && workout.media.length > 0 && (
           <Box>
             {workout.media.length > 1 ? (
@@ -84,94 +101,107 @@ export const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
             )}
           </Box>
         )}
-        <CardContent>
+
+        <CardContent
+          sx={{
+            padding: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            pb: 3.5,
+          }}
+        >
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
-              marginBottom: '0.5rem',
+              gap: 2,
             }}
           >
             <Avatar
               alt={workout.user.username}
               src={workout.user.profilePicUrl || ''}
-              sx={{ marginRight: '0.5rem' }}
+              sx={{
+                width: 48,
+                height: 48,
+                border: `2px solid ${theme.palette.primary.main}`,
+              }}
             />
-            <Typography variant="subtitle1">{workout.user.username}</Typography>
-            <Typography
-              variant="caption"
-              color="textSecondary"
-              sx={{ marginLeft: 'auto' }}
-            >
-              <FormatDistance date={new Date(workout.createdAt)} addSuffix />
-            </Typography>
+            <Box>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 'bold',
+                  color: theme.palette.text.primary,
+                }}
+              >
+                {workout.user.username}
+              </Typography>
+              <Typography variant="caption" color="textSecondary">
+                <FormatDistance date={new Date(workout.createdAt)} addSuffix />
+              </Typography>
+            </Box>
           </Box>
 
-          <Typography variant="h6" gutterBottom>
-            Duration: {workout.durationMin} minutes
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Star sx={{ mr: 0.5, fill: theme.palette.primary.light }} />
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 'medium',
+                  color: theme.palette.text.primary,
+                }}
+              >
+                {t('workout.points', { count: workout.points })}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <AccessTime
+                sx={{
+                  scale: 0.69,
+                  fill: theme.palette.text.secondary,
+                }}
+              />
+              <Typography
+                sx={{
+                  fontWeight: 'medium',
+                  color: theme.palette.text.secondary,
+                }}
+              >
+                {t('workout.nMinutes', { count: workout.durationMin })}
+              </Typography>
+            </Box>
+          </Box>
+
           {workout.notes && (
-            <Typography variant="body2">{workout.notes}</Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.secondary,
+              }}
+              className="line-clamp-2"
+            >
+              {workout.notes}
+            </Typography>
           )}
 
-          <Typography variant="body2" sx={{ marginTop: 1 }}>
-            Comments ({workout._count.comments})
-          </Typography>
-
-          <List>
-            {(workout as BaseWorkout as GetWorkoutResponse).comments?.map(
-              (comment) => (
-                <ListItem
-                  key={comment.id}
-                  sx={{
-                    padding: '0',
-                    display: 'flex',
-                    alignItems: 'start',
-                    borderBottom: '1px solid #eee',
-                  }}
-                >
-                  {comment.user.profilePicUrl && (
-                    <Box
-                      sx={{
-                        mr: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'start',
-                      }}
-                    >
-                      <Avatar
-                        src={comment.user.profilePicUrl}
-                        sx={{ width: 24, height: 24, mb: 0.5 }}
-                      />
-                    </Box>
-                  )}
-
-                  <Box>
-                    <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
-                      <Typography
-                        variant="body2"
-                        component="span"
-                        fontWeight="medium"
-                      >
-                        {comment.user.username}
-                      </Typography>
-                      <Typography variant="body2" component="span" ml={1}>
-                        {comment.text}
-                      </Typography>
-                    </Box>
-                    <Typography variant="caption" color="textSecondary">
-                      <FormatDistance
-                        date={new Date(comment.createdAt)}
-                        addSuffix
-                      />
-                    </Typography>
-                  </Box>
-                </ListItem>
-              ),
-            )}
-          </List>
+          {workout._count.comments > 0 && (
+            <Typography
+              variant="body2"
+              sx={{
+                marginTop: 1,
+                fontWeight: 'medium',
+                color: theme.palette.primary.main,
+              }}
+            >
+              {t('comment.comments', { count: workout._count.comments })}
+            </Typography>
+          )}
         </CardContent>
       </CardActionArea>
     </Card>
   );
 };
+
+export default WorkoutCard;

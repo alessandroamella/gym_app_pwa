@@ -1,10 +1,8 @@
-import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
+import { FC, PropsWithChildren } from 'react';
 
-export const ProtectedRoute: React.FC<React.PropsWithChildren> = ({
-  children,
-}) => {
+const ProtectedRoute: FC<PropsWithChildren> = ({ children }) => {
   const auth = useAuthStore();
   const location = useLocation();
 
@@ -14,3 +12,5 @@ export const ProtectedRoute: React.FC<React.PropsWithChildren> = ({
 
   return <>{children}</>;
 };
+
+export default ProtectedRoute;

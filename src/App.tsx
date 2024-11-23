@@ -1,18 +1,19 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import { AuthScreen } from './screens/AuthScreen';
-import { FeedScreen } from './screens/FeedScreen';
-import { AddWorkoutScreen } from './screens/AddWorkoutScreen';
-import { ProtectedRoute } from './ProtectedRoute';
 import { useAuthStore } from './store/authStore';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import axios from 'axios';
-import { WorkoutScreen } from './screens/WorkoutScreen';
-import { EditProfileScreen } from './screens/EditProfileScreen';
 import Layout from './components/Layout';
 import { darkTheme, lightTheme } from './themes';
 import LogoutScreen from './screens/LogoutScreen';
+import useDarkModeStore from './store/darkModeStore';
+import AuthScreen from './screens/AuthScreen';
+import FeedScreen from './screens/FeedScreen';
+import AddWorkoutScreen from './screens/AddWorkoutScreen';
+import ProtectedRoute from './ProtectedRoute';
+import WorkoutScreen from './screens/WorkoutScreen';
+import EditProfileScreen from './screens/EditProfileScreen';
 
 const App = () => {
   const { setUser, logout, token } = useAuthStore();
@@ -35,13 +36,7 @@ const App = () => {
     checkAuth();
   }, [setUser, logout, token]);
 
-  const [darkMode, setDarkMode] = useState<boolean>(
-    () => JSON.parse(localStorage.getItem('darkMode') || 'null') || false,
-  );
-
-  useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-  }, [darkMode]);
+  const darkMode = useDarkModeStore((state) => state.darkMode);
 
   return (
     <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
@@ -54,7 +49,7 @@ const App = () => {
             path="/"
             element={
               <ProtectedRoute>
-                <Layout darkMode={darkMode} setDarkMode={setDarkMode}>
+                <Layout>
                   <FeedScreen />
                 </Layout>
               </ProtectedRoute>
@@ -64,7 +59,7 @@ const App = () => {
             path="/add-workout"
             element={
               <ProtectedRoute>
-                <Layout darkMode={darkMode} setDarkMode={setDarkMode}>
+                <Layout>
                   <AddWorkoutScreen />
                 </Layout>
               </ProtectedRoute>
@@ -74,7 +69,7 @@ const App = () => {
             path="/workout/:id"
             element={
               <ProtectedRoute>
-                <Layout darkMode={darkMode} setDarkMode={setDarkMode}>
+                <Layout>
                   <WorkoutScreen />
                 </Layout>
               </ProtectedRoute>
@@ -84,7 +79,7 @@ const App = () => {
             path="/edit-profile"
             element={
               <ProtectedRoute>
-                <Layout darkMode={darkMode} setDarkMode={setDarkMode}>
+                <Layout>
                   <EditProfileScreen />
                 </Layout>
               </ProtectedRoute>
