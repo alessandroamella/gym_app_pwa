@@ -10,7 +10,6 @@ import {
   Avatar,
   Box,
 } from '@mui/material';
-import { formatDistanceToNow } from 'date-fns';
 import {
   BaseWorkout,
   GetAllWorkoutsResponse,
@@ -20,22 +19,23 @@ import { Link } from 'react-router-dom';
 import Slider from 'react-slick'; // Import react-slick
 import 'slick-carousel/slick/slick.css'; // Import slick-carousel styles
 import 'slick-carousel/slick/slick-theme.css';
+import FormatDistance from './FormatDistance';
 
 interface WorkoutCardProps {
   workout: GetAllWorkoutsResponse;
 }
 
-export const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
-  const sliderSettings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-  };
+const sliderSettings = {
+  dots: true,
+  infinite: true,
+  speed: 500,
+  slidesToShow: 1,
+  slidesToScroll: 1,
+};
 
+export const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
   return (
-    <Card sx={{ marginBottom: '1rem', maxWidth: 400 }}>
+    <Card sx={{ marginBottom: '1rem' }}>
       <CardActionArea component={Link} to={`/workout/${workout.id}`}>
         {workout.media && workout.media.length > 0 && (
           <Box>
@@ -103,9 +103,7 @@ export const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
               color="textSecondary"
               sx={{ marginLeft: 'auto' }}
             >
-              {formatDistanceToNow(new Date(workout.createdAt), {
-                addSuffix: true,
-              })}
+              <FormatDistance date={new Date(workout.createdAt)} addSuffix />
             </Typography>
           </Box>
 
@@ -162,9 +160,10 @@ export const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
                       </Typography>
                     </Box>
                     <Typography variant="caption" color="textSecondary">
-                      {formatDistanceToNow(new Date(comment.createdAt), {
-                        addSuffix: true,
-                      })}
+                      <FormatDistance
+                        date={new Date(comment.createdAt)}
+                        addSuffix
+                      />
                     </Typography>
                   </Box>
                 </ListItem>

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   AppBar,
   Toolbar,
-  Typography,
   IconButton,
   List,
   ListItem,
@@ -11,6 +10,7 @@ import {
   Box,
 } from '@mui/material';
 import {
+  Home as HomeIcon,
   Menu as MenuIcon,
   Edit as EditIcon,
   Logout as LogoutIcon,
@@ -34,6 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ children, darkMode, setDarkMode }) => {
 
   const menuItems = user
     ? [
+        { text: 'Feed', icon: <HomeIcon />, href: '/' },
         { text: 'Edit Profile', icon: <EditIcon />, href: '/edit-profile' },
         { text: 'Logout', icon: <LogoutIcon />, href: '/logout' },
       ]
@@ -42,18 +43,14 @@ const Layout: React.FC<LayoutProps> = ({ children, darkMode, setDarkMode }) => {
   const toggleTheme = () => setDarkMode(!darkMode);
 
   const navigationList = (
-    <Box
-      sx={{
-        width: 250,
-        height: '100%',
-      }}
-    >
+    <Box>
       <List>
         {menuItems.map((item) => (
           <Link
             key={item.text}
             to={item.href}
             style={{ textDecoration: 'none', color: 'inherit' }}
+            onClick={() => setDrawerOpen(false)}
           >
             <ListItem>
               <ListItemIcon>{item.icon}</ListItemIcon>
@@ -66,7 +63,7 @@ const Layout: React.FC<LayoutProps> = ({ children, darkMode, setDarkMode }) => {
   );
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
+    <Box sx={{ minHeight: '100vh', padding: '0' }}>
       <AppBar position="sticky">
         <Toolbar>
           <IconButton
@@ -76,11 +73,12 @@ const Layout: React.FC<LayoutProps> = ({ children, darkMode, setDarkMode }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <div className="grow" />
+          {/* <Typography variant="h6" sx={{ flexGrow: 1 }}>
             <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
               Gym App
             </Link>
-          </Typography>
+          </Typography> */}
           <IconButton color="inherit" onClick={toggleTheme}>
             {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
@@ -96,9 +94,8 @@ const Layout: React.FC<LayoutProps> = ({ children, darkMode, setDarkMode }) => {
         {navigationList}
       </SwipeableDrawer>
 
-      <Box component="main" sx={{ p: 3 }}>
-        {children}
-      </Box>
+      {/* sx={{ p: 3 }} */}
+      <Box component="main">{children}</Box>
     </Box>
   );
 };

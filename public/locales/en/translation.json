@@ -1,0 +1,56 @@
+{
+  "app": {
+    "name": "Gym App",
+    "loadingWorkouts": "Loading workouts...",
+    "noWorkoutsFound": "No workouts found."
+  },
+  "auth": {
+    "username": "Username",
+    "password": "Password",
+    "login": "Login",
+    "logout": "Logout",
+    "profileUpdated": "Profile updated successfully!"
+  },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "saveChanges": "Save Changes",
+    "workoutCount": "workout",
+    "points": "points"
+  },
+  "workout": {
+    "workout": "Workout",
+    "addWorkout": "Add Workout",
+    "durationMinutes": "Duration (minutes)",
+    "notes": "Notes",
+    "dragAndDrop": "Drag & drop an image or video here, or click to select files",
+    "max5Files": "You can upload a maximum of 5 files",
+    "dialogs": {
+      "deleteComment": {
+        "title": "Delete comment",
+        "confirmation": "Are you sure you want to delete this comment?"
+      },
+      "deleteWorkout": {
+        "title": "Delete workout",
+        "confirmation": "Are you sure you want to delete this workout?"
+      },
+      "warning": "This action cannot be undone."
+    }
+  },
+  "comment": {
+    "comments_zero": "No comments",
+    "comments_one": "1 comment",
+    "comments_other": "{{count}} comments",
+    "addComment": "Add a comment",
+    "postComment": "Post Comment"
+  },
+  "pwa": {
+    "newContentAvailable": "New content available, click on reload button to update.",
+    "reload": "Reload",
+    "close": "Close"
+  },
+  "buttons": {
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "feed": "Feed"
+}

@@ -1,4 +1,3 @@
-// src/screens/EditProfileScreen.tsx
 import React, { useState } from 'react';
 import {
   Box,

@@ -1,0 +1,56 @@
+{
+  "app": {
+    "name": "App Palestra",
+    "loadingWorkouts": "Caricamento allenamenti...",
+    "noWorkoutsFound": "Nessun allenamento trovato."
+  },
+  "auth": {
+    "username": "Nome utente",
+    "password": "Password",
+    "login": "Accedi",
+    "logout": "Esci",
+    "profileUpdated": "Profilo aggiornato correttamente!"
+  },
+  "profile": {
+    "editProfile": "Modifica Profilo",
+    "saveChanges": "Salva Modifiche",
+    "workoutCount": "allenamento",
+    "points": "punti"
+  },
+  "workout": {
+    "workout": "Allenamento",
+    "addWorkout": "Aggiungi Allenamento",
+    "durationMinutes": "Durata (minuti)",
+    "notes": "Note",
+    "dragAndDrop": "Trascina e rilascia un'immagine o un video qui, oppure clicca per selezionare i file",
+    "max5Files": "Puoi caricare al massimo 5 file",
+    "dialogs": {
+      "deleteComment": {
+        "title": "Elimina commento",
+        "confirmation": "Sei sicuro di voler eliminare questo commento?"
+      },
+      "deleteWorkout": {
+        "title": "Elimina allenamento",
+        "confirmation": "Sei sicuro di voler eliminare questo allenamento?"
+      },
+      "warning": "Questa azione non può essere annullata."
+    }
+  },
+  "comment": {
+    "comments_zero": "Nessun commento",
+    "comments_one": "1 commento",
+    "comments_other": "{{count}} commenti",
+    "addComment": "Aggiungi un commento",
+    "postComment": "Invia Commento"
+  },
+  "pwa": {
+    "newContentAvailable": "Nuovo contenuto disponibile, clicca sul pulsante ricarica per aggiornare.",
+    "reload": "Ricarica",
+    "close": "Chiudi"
+  },
+  "buttons": {
+    "cancel": "Annulla",
+    "delete": "Elimina"
+  },
+  "feed": "Feed"
+}

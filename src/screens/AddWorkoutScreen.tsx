@@ -13,6 +13,7 @@ import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
 import { BaseWorkout } from '../types';
 import { useAuthStore } from '../store/authStore';
+import { useTranslation } from 'react-i18next';
 
 export const AddWorkoutScreen: React.FC = () => {
   const [duration, setDuration] = useState<number | undefined>();
@@ -66,7 +67,7 @@ export const AddWorkoutScreen: React.FC = () => {
         for (const file of files) {
           console.log('Uploading file:', file);
           const mediaFormData = new FormData();
-          mediaFormData.append('files', file);
+          mediaFormData.append('file', file);
 
           await axios.post(`/v1/workout/${data.id}/media`, mediaFormData, {
             headers: {
@@ -85,6 +86,8 @@ export const AddWorkoutScreen: React.FC = () => {
     }
   };
 
+  const { t } = useTranslation();
+
   return (
     <Box
       component="form"
@@ -93,14 +96,14 @@ export const AddWorkoutScreen: React.FC = () => {
       className="max-w-lg mx-auto mt-8 p-6 bg-white shadow-lg rounded-lg"
     >
       <Typography variant="h4" className="text-center font-bold mb-6">
-        Add Workout
+        {t('workout.addWorkout')}
       </Typography>
       <TextField
         margin="normal"
         required
         fullWidth
         id="duration"
-        label="Duration (minutes)"
+        label={t('workout.durationMinutes')}
         name="duration"
         type="number"
         onChange={(e) => setDuration(parseInt(e.target.value, 10))}
@@ -109,7 +112,7 @@ export const AddWorkoutScreen: React.FC = () => {
         margin="normal"
         fullWidth
         name="notes"
-        label="Notes"
+        label={t('workout.notes')}
         id="notes"
         multiline
         rows={4}
@@ -123,12 +126,12 @@ export const AddWorkoutScreen: React.FC = () => {
       >
         <input {...getInputProps()} />
         {files ? (
-          <Typography className="text-gray-700">
+          <Typography className="text-gray-700 line-clamp-3">
             {files.map((file) => file.name).join(', ')}
           </Typography>
         ) : (
           <Typography className="text-gray-500">
-            Drag & drop an image or video here, or click to select files
+            {t('workout.dragAndDrop')}
           </Typography>
         )}
       </div>
@@ -159,7 +162,7 @@ export const AddWorkoutScreen: React.FC = () => {
           severity="warning"
           variant="filled"
         >
-          Puoi caricare da 1 a 5 filessz
+          {t('workout.max5Files')}
         </Alert>
       </Snackbar>
     </Box>
