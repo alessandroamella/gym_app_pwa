@@ -38,6 +38,7 @@ const EditProfileScreen = () => {
     maxSize: 5242880,
     onDrop: (acceptedFiles) => {
       if (acceptedFiles[0]) {
+        console.log('dropped file', acceptedFiles[0]);
         setProfilePic(acceptedFiles[0]);
         setPreviewUrl(URL.createObjectURL(acceptedFiles[0]));
         setHasChanges(true);

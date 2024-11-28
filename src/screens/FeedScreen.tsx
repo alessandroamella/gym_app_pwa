@@ -138,7 +138,7 @@ const FeedScreen: FC = () => {
           animate="visible"
           exit="exit"
         >
-          <Box sx={{ position: 'relative', p: 2 }}>
+          <Box sx={{ position: 'relative', p: 2, minHeight: '91.5vh' }}>
             <motion.div variants={itemVariants}>
               <ProfileCard />
             </motion.div>
@@ -169,24 +169,18 @@ const FeedScreen: FC = () => {
               )}
             </InfiniteScroll>
 
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.5, type: 'spring' }}
+            <Fab
+              color="primary"
+              aria-label="add"
+              sx={{
+                position: 'fixed',
+                bottom: 16,
+                right: 16,
+              }}
+              onClick={() => navigate('/add-workout')}
             >
-              <Fab
-                color="primary"
-                aria-label="add"
-                sx={{
-                  position: 'fixed',
-                  bottom: 16,
-                  right: 16,
-                }}
-                onClick={() => navigate('/add-workout')}
-              >
-                <AddIcon />
-              </Fab>
-            </motion.div>
+              <AddIcon />
+            </Fab>
           </Box>
         </motion.div>
       )}

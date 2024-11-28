@@ -2,8 +2,17 @@
   "app": {
     "name": "Gym App",
     "loadingWorkouts": "Loading workouts...",
+    "loadingMoreWorkouts": "Loading more workouts...",
     "noWorkoutsFound": "No workouts found",
     "noMoreWorkouts": "You have reached the end of the feed!!"
+  },
+  "date": {
+    "now": "Just now",
+    "nMin": "1 min",
+    "nHours_one": "1 hr",
+    "nHours_other": "{{count}} hours",
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "auth": {
     "username": "Username",
@@ -11,6 +20,9 @@
     "login": "Login",
     "logout": "Logout",
     "profileUpdated": "Profile updated successfully!"
+  },
+  "notifications": {
+    "alert": "Now it will ask you to accept notifications, click yes"
   },
   "profile": {
     "editProfile": "Edit Profile",
@@ -23,9 +35,20 @@
   "workout": {
     "workout": "Workout",
     "addWorkout": "Add Workout",
-    "durationMinutes": "Duration (minutes)",
-    "nMinutes_one": "{{count}} minute",
-    "nMinutes_other": "{{count}} minutes",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "pointsInfo": "Every 45 minutes of workout earns you 1 point",
+    "points": "{{count}} Point{{count, plural, =1 { } other {s}}}",
+    "placeholders": [
+      "Today was leg day",
+      "I benched Iheb Anter",
+      "Tennis game"
+    ],
+    "longWorkoutDialog": {
+      "title": "Woo!",
+      "text": "That's a long workout! Did you actually workout for that long?"
+    },
+    "invalidTimeRange": "Invalid time range",
     "notes": "Notes",
     "dragAndDrop": "Drag & drop an image or video here, or click to select files",
     "max5Files": "You can upload a maximum of 5 files",
@@ -57,12 +80,23 @@
   },
   "buttons": {
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "confirm": "Confirm"
   },
   "navigation": {
     "feed": "Feed",
     "editProfile": "Edit Profile",
     "logout": "Logout",
     "login": "Login"
+  },
+  "wall": {
+    "title": "waa fratm!",
+    "instructions": "To use Gym App, please ensure you are on a mobile device and have the Progressive Web App (PWA) installed.",
+    "stepsTitle": "Here are the steps to install the app:",
+    "step1": "When it asks you",
+    "step2": "Click yes",
+    "step3": "that's it",
+    "redirectMessage": "Please switch to mobile and install the app.",
+    "installButton": "Learn More"
   }
 }

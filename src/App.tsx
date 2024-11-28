@@ -2,8 +2,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { useAuthStore } from './store/authStore';
-import { useEffect } from 'react';
-import axios from 'axios';
+import { useEffect, useRef } from 'react';
+import axios, { AxiosError } from 'axios';
 import Layout from './components/Layout';
 import { darkTheme, lightTheme } from './themes';
 import LogoutScreen from './screens/LogoutScreen';
@@ -14,27 +14,77 @@ import AddWorkoutScreen from './screens/AddWorkoutScreen';
 import ProtectedRoute from './ProtectedRoute';
 import WorkoutScreen from './screens/WorkoutScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
+import { useTranslation } from 'react-i18next';
+import firebase from './firebase';
 
 const App = () => {
   const { setUser, logout, token } = useAuthStore();
 
+  function requestPermission() {
+    console.log('Requesting permission...');
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        console.log('Notification permission granted.');
+      }
+    });
+  }
+
+  const { t } = useTranslation();
+
+  const isFetching = useRef(false);
+
   useEffect(() => {
     const checkAuth = async () => {
+      if (isFetching.current) {
+        return;
+      }
+      isFetching.current = true;
+
       try {
         if (token) {
-          const response = await axios.get('/v1/auth/profile', {
+          const { data } = await axios.get('/v1/auth/profile', {
             headers: { Authorization: `Bearer ${token}` },
           });
-          setUser(response.data);
+          console.log('User authenticated:', data);
+          setUser(data);
         }
-      } catch (error) {
-        console.error('Authentication check failed:', error);
+      } catch (err) {
+        console.error(
+          'Authentication check failed:',
+          (err as AxiosError)?.response?.data || err,
+        );
+        isFetching.current = false;
         logout();
+      }
+
+      try {
+        if (Notification.permission !== 'granted') {
+          window.alert(t('notifications.alert'));
+        }
+        requestPermission();
+
+        const deviceToken = await firebase.getDeviceToken();
+
+        await axios.patch(
+          '/v1/device-token',
+          {
+            token: deviceToken,
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        console.log('Device token updated:', deviceToken);
+      } catch (err) {
+        console.error(
+          'Failed to update device token:',
+          (err as AxiosError)?.response?.data || err,
+        );
       }
     };
 
     checkAuth();
-  }, [setUser, logout, token]);
+  }, [setUser, logout, token, t]);
 
   const darkMode = useDarkModeStore((state) => state.darkMode);
 

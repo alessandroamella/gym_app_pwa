@@ -11,7 +11,10 @@ export interface Profile {
   };
 }
 
-export type WorkoutUser = Pick<Profile, 'id' | 'username' | 'profilePicUrl'>;
+export type WorkoutUser = Pick<
+  Profile,
+  'id' | 'username' | 'profilePicUrl' | 'points'
+>;
 
 export interface CommentUser extends WorkoutUser {}
 
@@ -32,7 +35,8 @@ export interface WorkoutComment {
 export interface BaseWorkout {
   id: number;
   title: string;
-  durationMin: number;
+  startDate: Date;
+  endDate: Date;
   description: string;
   createdAt: Date;
   notes?: string;

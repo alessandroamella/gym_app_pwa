@@ -25,19 +25,22 @@ import {
 } from '@mui/material';
 import {
   ArrowBack,
-  Delete as DeleteIcon,
+  Delete,
   FitnessCenter,
-  AccessTime,
-  Comment as CommentIcon,
-  Send as SendIcon,
-  Favorite,
-  Share,
+  TimerOutlined,
+  Comment,
+  Send,
 } from '@mui/icons-material';
 import { useAuthStore } from '../store/authStore';
 import { GetWorkoutResponse, WorkoutMedia } from '../types';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import FormatDistance from '../components/FormatDistance';
+import {
+  FormatDistance,
+  FormatDistanceRelative,
+  FormatHHMM,
+} from '../components/DateComponents';
+import UsernameChip from '../components/UsernameChip';
 
 const WorkoutScreen: FC = () => {
   const { id } = useParams();
@@ -47,7 +50,7 @@ const WorkoutScreen: FC = () => {
   const [error, setError] = useState('');
   const [commentText, setCommentText] = useState('');
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
-  const [liked, setLiked] = useState(false);
+  // const [liked, setLiked] = useState(false);
   const { token, user } = useAuthStore();
   const { t } = useTranslation();
 
@@ -185,7 +188,7 @@ const WorkoutScreen: FC = () => {
               color="error"
               sx={{ ml: 'auto' }}
             >
-              <DeleteIcon />
+              <Delete />
             </IconButton>
           )}
         </Box>
@@ -221,9 +224,12 @@ const WorkoutScreen: FC = () => {
                   sx={{ width: 56, height: 56, mr: 2 }}
                 />
                 <Box>
-                  <Typography variant="h6">{workout.user.username}</Typography>
+                  <UsernameChip
+                    points={workout.user.points || 0}
+                    username={workout.user.username}
+                  />
                   <Typography variant="caption" color="textSecondary">
-                    <FormatDistance
+                    <FormatDistanceRelative
                       date={new Date(workout.createdAt)}
                       addSuffix
                     />
@@ -232,9 +238,10 @@ const WorkoutScreen: FC = () => {
               </Box>
 
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <AccessTime sx={{ mr: 1 }} />
+                <TimerOutlined sx={{ mr: 1 }} />
                 <Typography variant="h6">
-                  {workout.durationMin} minutes
+                  <FormatHHMM date={workout.startDate} /> -{' '}
+                  <FormatHHMM date={workout.endDate} />
                 </Typography>
               </Box>
 
@@ -245,13 +252,13 @@ const WorkoutScreen: FC = () => {
                     color="text.secondary"
                     gutterBottom
                   >
-                    Notes
+                    {t('workout.notes')}
                   </Typography>
                   <Typography variant="body1">{workout.notes}</Typography>
                 </Box>
               )}
 
-              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+              {/* <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                 <IconButton
                   onClick={() => setLiked(!liked)}
                   color={liked ? 'primary' : 'default'}
@@ -261,14 +268,14 @@ const WorkoutScreen: FC = () => {
                 <IconButton>
                   <Share />
                 </IconButton>
-              </Box>
+              </Box> */}
 
               <Box sx={{ mt: 3 }}>
                 <Typography
                   variant="h6"
                   sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
                 >
-                  <CommentIcon sx={{ mr: 1 }} />
+                  <Comment sx={{ mr: 1 }} />
                   {t('comment.comments', { count: workout.comments.length })}
                 </Typography>
 
@@ -290,7 +297,7 @@ const WorkoutScreen: FC = () => {
                     disabled={!commentText}
                     sx={{ alignSelf: 'center' }}
                   >
-                    <SendIcon />
+                    <Send />
                   </IconButton>
                 </Box>
 
@@ -363,7 +370,7 @@ const WorkoutScreen: FC = () => {
                           sx={{ ml: 1 }}
                           size="small"
                         >
-                          <DeleteIcon fontSize="small" />
+                          <Delete fontSize="small" />
                         </IconButton>
                       )}
                     </ListItem>
@@ -379,7 +386,7 @@ const WorkoutScreen: FC = () => {
           onClose={() => setDeleteCommentId(null)}
         >
           <DialogTitle>
-            <DeleteIcon color="error" sx={{ mr: 1 }} />
+            <Delete color="error" sx={{ mr: 1 }} />
             {t('workout.dialogs.deleteComment.title')}
           </DialogTitle>
           <DialogContent>
@@ -400,7 +407,7 @@ const WorkoutScreen: FC = () => {
             <Button
               onClick={() => handleDeleteComment(deleteCommentId!)}
               color="error"
-              startIcon={<DeleteIcon />}
+              startIcon={<Delete />}
             >
               {t('buttons.delete')}
             </Button>
@@ -412,7 +419,7 @@ const WorkoutScreen: FC = () => {
           onClose={() => setDeleteConfirmationOpen(false)}
         >
           <DialogTitle>
-            <DeleteIcon color="error" sx={{ mr: 1 }} />
+            <Delete color="error" sx={{ mr: 1 }} />
             {t('workout.dialogs.deleteWorkout.title')}
           </DialogTitle>
           <DialogContent>
@@ -433,7 +440,7 @@ const WorkoutScreen: FC = () => {
             <Button
               onClick={handleDeleteWorkout}
               color="error"
-              startIcon={<DeleteIcon />}
+              startIcon={<Delete />}
             >
               {t('buttons.delete')}
             </Button>

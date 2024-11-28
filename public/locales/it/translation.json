@@ -2,8 +2,17 @@
   "app": {
     "name": "App Palestra",
     "loadingWorkouts": "Caricamento allenamenti...",
+    "loadingMoreWorkouts": "Caricamento altri allenamenti...",
     "noWorkoutsFound": "Nessun allenamento trovato",
     "noMoreWorkouts": "Hai raggiunto la fine del feed!!"
+  },
+  "date": {
+    "now": "Adesso",
+    "nMin": "{{count}} min",
+    "nHr_one": "1 ora",
+    "nHr_other": "{{count}} ore",
+    "today": "Oggi",
+    "yesterday": "Ieri"
   },
   "auth": {
     "username": "Nome utente",
@@ -11,6 +20,9 @@
     "login": "Accedi",
     "logout": "Esci",
     "profileUpdated": "Profilo aggiornato correttamente!"
+  },
+  "notifications": {
+    "alert": "Ora ti chiederà di accettare le notifiche, clicca sì"
   },
   "profile": {
     "editProfile": "Modifica Profilo",
@@ -21,11 +33,23 @@
   "workout": {
     "workout": "Allenamento",
     "addWorkout": "Aggiungi Allenamento",
-    "durationMinutes": "Durata (minuti)",
+    "startTime": "Ora di inizio",
+    "endTime": "Ora di fine",
+    "pointsInfo": "Ogni 45 minuti di allenamento = 1 punto",
+    "points": "{{count}} Punto{{count, plural, =1 { } other {i}}}",
+    "placeholders": [
+      "Leg day incò",
+      "Dio can mo'c lavor",
+      "Ho fpancato fra",
+      "Partita a tennis con Jeb Plays TV"
+    ],
+    "longWorkoutDialog": {
+      "title": "Oo fenomen!",
+      "text": "Peso! Ti sei davvero allenato per così tanto tempo?"
+    },
+    "invalidTimeRange": "Intervallo di tempo non valido",
     "points_one": "{{count}} punto",
     "points_other": "{{count}} punti",
-    "nMinutes_one": "{{count}} minuto",
-    "nMinutes_other": "{{count}} minuti",
     "notes": "Note",
     "dragAndDrop": "Trascina e rilascia un'immagine o un video qui, oppure clicca per selezionare i file",
     "max5Files": "Puoi caricare al massimo 5 file",
@@ -55,7 +79,8 @@
   },
   "buttons": {
     "cancel": "Annulla",
-    "delete": "Elimina"
+    "delete": "Elimina",
+    "confirm": "Conferma"
   },
   "feed": "Feed"
 }

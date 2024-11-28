@@ -1,0 +1,3055 @@
+// App.css
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+
+// App.tsx
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
+import { useAuthStore } from './store/authStore';
+import { useEffect, useRef } from 'react';
+import axios, { AxiosError } from 'axios';
+import Layout from './components/Layout';
+import { darkTheme, lightTheme } from './themes';
+import LogoutScreen from './screens/LogoutScreen';
+import useDarkModeStore from './store/darkModeStore';
+import AuthScreen from './screens/AuthScreen';
+import FeedScreen from './screens/FeedScreen';
+import AddWorkoutScreen from './screens/AddWorkoutScreen';
+import ProtectedRoute from './ProtectedRoute';
+import WorkoutScreen from './screens/WorkoutScreen';
+import EditProfileScreen from './screens/EditProfileScreen';
+import { useTranslation } from 'react-i18next';
+import firebase from './firebase';
+
+const App = () => {
+  const { setUser, logout, token } = useAuthStore();
+
+  function requestPermission() {
+    console.log('Requesting permission...');
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        console.log('Notification permission granted.');
+      }
+    });
+  }
+
+  const { t } = useTranslation();
+
+  const isFetching = useRef(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (isFetching.current) {
+        return;
+      }
+      isFetching.current = true;
+
+      try {
+        if (token) {
+          const { data } = await axios.get('/v1/auth/profile', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          console.log('User authenticated:', data);
+          setUser(data);
+        }
+      } catch (err) {
+        console.error(
+          'Authentication check failed:',
+          (err as AxiosError)?.response?.data || err,
+        );
+        isFetching.current = false;
+        logout();
+      }
+
+      try {
+        if (Notification.permission !== 'granted') {
+          window.alert(t('notifications.alert'));
+        }
+        requestPermission();
+
+        const deviceToken = await firebase.getDeviceToken();
+
+        await axios.patch(
+          '/v1/device-token',
+          {
+            token: deviceToken,
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        console.log('Device token updated:', deviceToken);
+      } catch (err) {
+        console.error(
+          'Failed to update device token:',
+          (err as AxiosError)?.response?.data || err,
+        );
+      }
+    };
+
+    checkAuth();
+  }, [setUser, logout, token, t]);
+
+  const darkMode = useDarkModeStore((state) => state.darkMode);
+
+  return (
+    <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
+      <CssBaseline />
+      <Router>
+        <Routes>
+          <Route path="/auth" element={<AuthScreen />} />
+          <Route path="/logout" element={<LogoutScreen />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <FeedScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/add-workout"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <AddWorkoutScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workout/:id"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <WorkoutScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-profile"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <EditProfileScreen />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </ThemeProvider>
+  );
+};
+
+export default App;
+
+
+// PWABadge.css
+.PWABadge-container {
+    padding: 0;
+    margin: 0;
+    width: 0;
+    height: 0;
+}
+.PWABadge-toast {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    margin: 16px;
+    padding: 12px;
+    border: 1px solid #8885;
+    border-radius: 4px;
+    z-index: 1;
+    text-align: left;
+    box-shadow: 3px 4px 5px 0 #8885;
+    background-color: white;
+}
+.PWABadge-toast-message {
+    margin-bottom: 8px;
+}
+.PWABadge-toast-button {
+    border: 1px solid #8885;
+    outline: none;
+    margin-right: 5px;
+    border-radius: 2px;
+    padding: 3px 10px;
+}
+
+
+// PWABadge.tsx
+import { useTranslation } from 'react-i18next';
+import './PWABadge.css';
+
+import { useRegisterSW } from 'virtual:pwa-register/react';
+
+function PWABadge() {
+  // check for updates every hour
+  const period = 60 * 60 * 1000;
+
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegisteredSW(swUrl, r) {
+      if (period <= 0) return;
+      if (r?.active?.state === 'activated') {
+        registerPeriodicSync(period, swUrl, r);
+      } else if (r?.installing) {
+        r.installing.addEventListener('statechange', (e) => {
+          const sw = e.target as ServiceWorker;
+          if (sw.state === 'activated') registerPeriodicSync(period, swUrl, r);
+        });
+      }
+    },
+  });
+
+  function close() {
+    setNeedRefresh(false);
+  }
+
+  const { t } = useTranslation();
+
+  return (
+    <div className="PWABadge" role="alert" aria-labelledby="toast-message">
+      {needRefresh && (
+        <div className="PWABadge-toast">
+          <div className="PWABadge-message">
+            <span id="toast-message">{t('pwa.newContentAvailable')}</span>
+          </div>
+          <div className="PWABadge-buttons">
+            <button
+              className="PWABadge-toast-button"
+              onClick={() => updateServiceWorker(true)}
+            >
+              {t('pwa.reload')}
+            </button>
+            <button className="PWABadge-toast-button" onClick={() => close()}>
+              {t('pwa.close')}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default PWABadge;
+
+/**
+ * This function will register a periodic sync check every hour, you can modify the interval as needed.
+ */
+function registerPeriodicSync(
+  period: number,
+  swUrl: string,
+  r: ServiceWorkerRegistration,
+) {
+  if (period <= 0) return;
+
+  setInterval(async () => {
+    if ('onLine' in navigator && !navigator.onLine) return;
+
+    const resp = await fetch(swUrl, {
+      cache: 'no-store',
+      headers: {
+        cache: 'no-store',
+        'cache-control': 'no-cache',
+      },
+    });
+
+    if (resp?.status === 200) await r.update();
+  }, period);
+}
+
+
+// ProtectedRoute.tsx
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from './store/authStore';
+import { FC, PropsWithChildren } from 'react';
+
+const ProtectedRoute: FC<PropsWithChildren> = ({ children }) => {
+  const auth = useAuthStore();
+  const location = useLocation();
+
+  if (!auth.user) {
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
+
+export default ProtectedRoute;
+
+
+// i18n.ts
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+import Backend from 'i18next-http-backend';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+i18n
+  .use(Backend)
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    fallbackLng: 'en',
+    debug: true,
+    supportedLngs: ['en', 'it'],
+    interpolation: {
+      escapeValue: false,
+    },
+  });
+
+export default i18n;
+
+
+// index.css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+// main.tsx
+import { StrictMode } from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
+
+import './i18n';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
+
+
+// vite-env.d.ts
+/// <reference types="vite/client" />
+/// <reference types="vite-plugin-pwa/react" />
+
+
+// hooks/isAppAndMobile.tsx
+import { useEffect, useState } from 'react';
+
+const useIsStandalone = () => {
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  const isMobile = () => window.innerWidth <= 768; // Simple check for mobile devices based on width
+
+  useEffect(() => {
+    const checkStandalone = () => {
+      const isStandaloneMode =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window.navigator as any).standalone;
+      setIsStandalone(isStandaloneMode && isMobile());
+    };
+
+    checkStandalone();
+
+    // Listen for screen resize to re-evaluate
+    window.addEventListener('resize', checkStandalone);
+    return () => window.removeEventListener('resize', checkStandalone);
+  }, []);
+
+  return isStandalone;
+};
+
+export default useIsStandalone;
+
+
+// store/authStore.ts
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { Profile } from '../types';
+
+interface AuthState {
+  token: string | null;
+  user: Profile | null;
+  setToken: (token: string | null) => void;
+  setUser: (user: Profile) => void;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      token: null,
+      user: null,
+      setToken: (token) => set({ token }),
+      setUser: (user) => set({ user }),
+      logout: () => {
+        set({ user: null, token: null });
+      },
+    }),
+    {
+      name: 'gym-auth', // key for localStorage
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user,
+      }),
+    },
+  ),
+);
+
+
+// store/darkModeStore.ts
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+
+interface DarkModeStore {
+  darkMode: boolean;
+  toggleDarkMode: () => void;
+  setDarkMode: (darkMode: boolean) => void;
+}
+
+const useDarkModeStore = create<DarkModeStore>()(
+  persist(
+    (set) => ({
+      darkMode: false,
+      toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+      setDarkMode: (darkMode: boolean) => set({ darkMode }),
+    }),
+    {
+      name: 'dark-mode-storage',
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);
+
+export default useDarkModeStore;
+
+
+// store/splashStore.ts
+import { create } from 'zustand';
+
+interface SplashState {
+  splash: boolean;
+  setSplash: (splash: boolean) => void;
+}
+
+export const useSplashStore = create<SplashState>()((set) => ({
+  splash: true,
+  setSplash: (splash) => set({ splash }),
+}));
+
+
+// firebase/index.ts
+import { FirebaseApp, initializeApp } from 'firebase/app';
+import { getMessaging, getToken, Messaging } from 'firebase/messaging';
+import config from '../config';
+
+class FirebaseService {
+  private app: FirebaseApp;
+  // private analytics: Analytics;
+  private messaging: Messaging;
+
+  constructor() {
+    this.app = initializeApp(config.firebase.config);
+    // this.analytics = getAnalytics(this.app);
+    this.messaging = getMessaging(this.app);
+  }
+
+  async getDeviceToken(): Promise<string> {
+    return getToken(this.messaging, {
+      vapidKey: config.firebase.vapidKey,
+    });
+  }
+}
+
+const firebase = new FirebaseService();
+export default firebase;
+
+
+// screens/AddWorkoutScreen.tsx
+import { FC, FormEvent, useCallback, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import {
+  Button,
+  TextField,
+  Box,
+  Typography,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  useTheme,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from '@mui/material';
+import { parse, differenceInMinutes } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { useDropzone } from 'react-dropzone';
+import axios, { AxiosError } from 'axios';
+import { useAuthStore } from '../store/authStore';
+import { useTranslation } from 'react-i18next';
+import _ from 'lodash';
+import { WorkoutData } from '../types/workoutData';
+
+const ConfirmDialog: FC<{
+  isConfirmDialogOpen: boolean;
+  setIsConfirmDialogOpen: (open: boolean) => void;
+  pendingSubmission: WorkoutData | null;
+  submitWorkout: (data: WorkoutData) => void;
+}> = ({
+  isConfirmDialogOpen,
+  pendingSubmission,
+  setIsConfirmDialogOpen,
+  submitWorkout,
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <Dialog
+      open={isConfirmDialogOpen}
+      onClose={() => setIsConfirmDialogOpen(false)}
+      aria-labelledby="long-workout-dialog-title"
+      aria-describedby="long-workout-dialog-description"
+    >
+      <DialogTitle id="long-workout-dialog-title">
+        {t('workout.longWorkoutDialog.title')}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="long-workout-dialog-description">
+          {t('workout.longWorkoutDialog.text')}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setIsConfirmDialogOpen(false)} color="primary">
+          {t('buttons.cancel')}
+        </Button>
+        <Button
+          onClick={() => {
+            if (pendingSubmission) {
+              submitWorkout(pendingSubmission);
+              setIsConfirmDialogOpen(false);
+            }
+          }}
+          color="primary"
+          autoFocus
+          variant="contained"
+        >
+          {t('buttons.confirm')}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+const AddWorkoutScreen = () => {
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [pendingSubmission, setPendingSubmission] =
+    useState<WorkoutData | null>(null);
+  const [startHour, setStartHour] = useState<string>('');
+  const [endHour, setEndHour] = useState<string>('');
+  const [notes, setNotes] = useState('');
+  const [files, setFiles] = useState<File[] | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [alert, setAlert] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { token } = useAuthStore();
+  const { t } = useTranslation();
+  const theme = useTheme();
+
+  const handleDrop = (acceptedFiles: File[]) => {
+    if (acceptedFiles?.length > 0) {
+      setFiles(acceptedFiles);
+    } else {
+      setAlert(t('workout.max5Files'));
+    }
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: handleDrop,
+    accept: { 'image/*': [], 'video/*': [] },
+    maxFiles: 5,
+  });
+
+  const [points, setPoints] = useState<number | null>(null);
+
+  const getDurationMin = useCallback(() => {
+    const startDate = parse(startHour, 'HH:mm', new Date());
+    const endDate = parse(endHour, 'HH:mm', new Date());
+    const durationMin = differenceInMinutes(endDate, startDate);
+
+    return { startDate, endDate, durationMin };
+  }, [startHour, endHour]);
+
+  useEffect(() => {
+    if (startHour && endHour) {
+      const { durationMin } = getDurationMin();
+
+      if (durationMin > 0) {
+        setPoints(Math.floor(durationMin / 45));
+      } else {
+        setPoints(null); // Reset points if duration is invalid
+      }
+    } else {
+      setPoints(null); // Reset points if times are not entered
+    }
+  }, [startHour, endHour, getDurationMin]);
+
+  const handleSubmit = async (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
+
+    const { startDate, endDate, durationMin } = getDurationMin();
+
+    if (durationMin <= 0) {
+      setAlert(t('workout.invalidTimeRange'));
+      return;
+    }
+
+    // Check for extremely long workouts (over 3 hours)
+    if (durationMin > 180) {
+      setPendingSubmission({ startDate, endDate, notes });
+      setIsConfirmDialogOpen(true);
+      return;
+    }
+
+    await submitWorkout({ startDate, endDate, notes });
+  };
+
+  const submitWorkout = async ({ startDate, endDate, notes }: WorkoutData) => {
+    setIsUploading(true);
+
+    try {
+      const { data } = await axios.post(
+        '/v1/workout',
+        { startDate, endDate, notes },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      if (files) {
+        for (const file of files) {
+          const mediaFormData = new FormData();
+          mediaFormData.append('file', file);
+          await axios.post(`/v1/workout/${data.id}/media`, mediaFormData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+        }
+      }
+      navigate('/', { replace: true });
+    } catch (error) {
+      console.error('Error adding workout:', error);
+      setAlert(
+        t('workout.errorAdding', {
+          error: JSON.stringify((error as AxiosError)?.response?.data || error),
+        }),
+      );
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const [placeholder, setPlaceholder] = useState<string>('--');
+
+  const changePlaceholder = useCallback(
+    (_e: unknown, noDelay = false) => {
+      setTimeout(
+        () => {
+          const placeholder = _.sample(
+            t('workout.placeholders', { returnObjects: true }) as string[],
+          )!;
+          setPlaceholder(placeholder);
+        },
+        noDelay ? 0 : 300,
+      );
+    },
+    [t],
+  );
+
+  useEffect(() => {
+    changePlaceholder(undefined, true);
+  }, [changePlaceholder]);
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      style={{
+        minHeight: '100vh',
+        background: theme.palette.background.default,
+        padding: '24px',
+      }}
+    >
+      <ConfirmDialog
+        isConfirmDialogOpen={isConfirmDialogOpen}
+        setIsConfirmDialogOpen={setIsConfirmDialogOpen}
+        pendingSubmission={pendingSubmission}
+        submitWorkout={submitWorkout}
+      />
+
+      <Box
+        component={motion.form}
+        variants={containerVariants}
+        noValidate
+        onSubmit={handleSubmit}
+        sx={{
+          maxWidth: 500,
+          margin: '0 auto',
+          backgroundColor: theme.palette.background.paper,
+          borderRadius: 2,
+          boxShadow: 3,
+          padding: 4,
+        }}
+      >
+        <motion.div variants={itemVariants}>
+          <Typography
+            variant="h4"
+            align="center"
+            sx={{
+              fontWeight: 'bold',
+              marginBottom: 2,
+              background: `linear-gradient(to right, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            {t('workout.addWorkout')}
+          </Typography>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Box display="flex" gap={2}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="startHour"
+              label={t('workout.startTime')}
+              name="startHour"
+              type="time"
+              value={startHour}
+              onChange={(e) => setStartHour(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              sx={{ marginBottom: 2 }}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="endHour"
+              label={t('workout.endTime')}
+              name="endHour"
+              type="time"
+              value={endHour}
+              onChange={(e) => setEndHour(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              sx={{ marginBottom: 2 }}
+            />
+          </Box>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            mt={2}
+          >
+            {points !== null ? (
+              <Chip
+                label={t('workout.points', { count: points })}
+                color="success"
+                variant="outlined"
+                sx={{ fontWeight: 'bold', fontSize: '1.2rem' }}
+              />
+            ) : startHour && endHour ? (
+              <Chip
+                label={t('workout.invalidTimeRange')}
+                color="error"
+                variant="outlined"
+              />
+            ) : (
+              <Typography
+                className="text-center"
+                variant="body2"
+                color="textSecondary"
+              >
+                {t('workout.pointsInfo')}
+              </Typography>
+            )}
+          </Box>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <TextField
+            margin="normal"
+            fullWidth
+            name="notes"
+            label={t('workout.notes')}
+            id="notes"
+            multiline
+            placeholder={placeholder}
+            onBlur={changePlaceholder}
+            rows={4}
+            onChange={(e) => setNotes(e.target.value)}
+            sx={{ marginBottom: 2 }}
+            onKeyDown={(e) => {
+              // on ctrl+enter submit
+              if (e.key === 'Enter' && e.ctrlKey) {
+                handleSubmit();
+              }
+            }}
+          />
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <div
+            {...getRootProps()}
+            style={{
+              padding: '16px',
+              border: `2px dashed ${
+                isDragActive
+                  ? theme.palette.primary.main
+                  : theme.palette.divider
+              }`,
+              borderRadius: '8px',
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'border-color 0.2s ease-in-out',
+              backgroundColor: isDragActive
+                ? theme.palette.action.hover
+                : theme.palette.background.default,
+            }}
+          >
+            <input {...getInputProps()} />
+            {files ? (
+              <Typography variant="body2" color="textSecondary">
+                {files.map((file) => file.name).join(', ')}
+              </Typography>
+            ) : (
+              <motion.div
+                animate={isDragActive ? { scale: 1.1 } : { scale: 1 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Typography variant="body2" color="textSecondary">
+                  {t('workout.dragAndDrop')}
+                </Typography>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={isUploading}
+            sx={{
+              marginTop: 2,
+              paddingY: 1.5,
+              borderRadius: 2,
+              background: `linear-gradient(to right, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              '&:hover': {
+                background: `linear-gradient(to right, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
+              },
+            }}
+          >
+            {isUploading ? (
+              <CircularProgress size={24} sx={{ color: 'white' }} />
+            ) : (
+              t('workout.addWorkout')
+            )}
+          </Button>
+        </motion.div>
+      </Box>
+
+      <Snackbar
+        open={!!alert}
+        autoHideDuration={3000}
+        onClose={() => setAlert(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setAlert(null)}
+          severity="warning"
+          variant="filled"
+        >
+          {alert}
+        </Alert>
+      </Snackbar>
+    </motion.div>
+  );
+};
+
+export default AddWorkoutScreen;
+
+
+// screens/AuthScreen.tsx
+import { FormEvent, useState } from 'react';
+import { TextField, Button, Box, Alert } from '@mui/material';
+import { motion } from 'framer-motion';
+import axios, { AxiosError } from 'axios';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+import { Lock, Person } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
+
+const AuthScreen = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { setUser, setToken } = useAuthStore();
+  const from = location.state?.from?.pathname || '/';
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    try {
+      const response = await axios.post('/v1/auth/login', {
+        username,
+        password,
+      });
+      setToken(response.data.token);
+      const profileResponse = await axios.get('/v1/auth/profile', {
+        headers: { Authorization: `Bearer ${response.data.token}` },
+      });
+      setUser(profileResponse.data);
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(
+        (err as AxiosError<{ message: string }>)?.response?.data?.message ||
+          'Login failed',
+      );
+    }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: 'easeOut' },
+    },
+  };
+
+  const logoVariants = {
+    hidden: { scale: 0.5, rotate: 0, opacity: 0 },
+    visible: {
+      scale: 1,
+      rotate: 360,
+      opacity: 1,
+      transition: {
+        duration: 1.2,
+        ease: 'easeOut',
+        opacity: { duration: 0.3 },
+      },
+    },
+  };
+
+  const { t } = useTranslation();
+
+  return (
+    <Box className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+        className="w-full max-w-md"
+      >
+        <motion.div
+          className="bg-white rounded-2xl shadow-xl p-8"
+          whileHover={{ scale: 1.02 }}
+          transition={{ type: 'spring', stiffness: 300 }}
+        >
+          <div className="flex flex-col items-center mb-8">
+            <motion.img
+              src="/logo.png"
+              alt="Gym App Logo"
+              variants={logoVariants}
+              className="w-32 h-32 object-contain mb-4"
+              drag
+              dragConstraints={{
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+              }}
+              whileHover={{
+                scale: 1.1,
+                rotate: 10,
+                transition: { duration: 0.2 },
+              }}
+              whileTap={{ scale: 0.9 }}
+            />
+          </div>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Alert severity="error" className="mb-4">
+                {error}
+              </Alert>
+            </motion.div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              transition={{ type: 'spring', stiffness: 400 }}
+            >
+              <TextField
+                label={t('auth.username')}
+                fullWidth
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                slotProps={{
+                  input: {
+                    startAdornment: <Person className="mr-2 text-gray-400" />,
+                  },
+                }}
+                className="bg-gray-50 rounded-lg"
+              />
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              transition={{ type: 'spring', stiffness: 400 }}
+            >
+              <TextField
+                label={t('auth.password')}
+                type="password"
+                fullWidth
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                slotProps={{
+                  input: {
+                    startAdornment: <Lock className="mr-2 text-gray-400" />,
+                  },
+                }}
+                className="bg-gray-50 rounded-lg"
+              />
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                sx={{
+                  mt: 1,
+                }}
+                type="submit"
+                variant="contained"
+                fullWidth
+                disabled={!username || !password}
+                className="bg-blue-500 hover:bg-blue-600 py-3 text-lg font-semibold rounded-lg"
+              >
+                {t('auth.login')}
+              </Button>
+            </motion.div>
+          </form>
+        </motion.div>
+      </motion.div>
+    </Box>
+  );
+};
+
+export default AuthScreen;
+
+
+// screens/EditProfileScreen.tsx
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDropzone } from 'react-dropzone';
+import {
+  Box,
+  Button,
+  TextField,
+  Avatar,
+  Typography,
+  Alert,
+  Snackbar,
+  Paper,
+  IconButton,
+  CircularProgress,
+} from '@mui/material';
+import { PhotoCamera, Save, Close } from '@mui/icons-material';
+import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
+import { useNavigate } from 'react-router-dom';
+import { Profile } from '../types';
+
+const EditProfileScreen = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [profilePic, setProfilePic] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const { token, user, setUser } = useAuthStore();
+  const navigate = useNavigate();
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif'],
+    },
+    maxSize: 5242880,
+    onDrop: (acceptedFiles) => {
+      if (acceptedFiles[0]) {
+        console.log('dropped file', acceptedFiles[0]);
+        setProfilePic(acceptedFiles[0]);
+        setPreviewUrl(URL.createObjectURL(acceptedFiles[0]));
+        setHasChanges(true);
+      }
+    },
+  });
+
+  useEffect(() => {
+    // Cleanup preview URL on unmount
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  useEffect(() => {
+    // Check for unsaved changes
+    if (username || password || profilePic) {
+      setHasChanges(true);
+    }
+  }, [username, password, profilePic]);
+
+  const handleSave = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess(false);
+
+    try {
+      if (username || password) {
+        await axios.patch(
+          '/v1/auth/profile',
+          { username, password },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+      }
+
+      if (profilePic) {
+        const formData = new FormData();
+        formData.append('file', profilePic);
+        await axios.patch('/v1/auth/profile-pic', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+
+      setSuccess(true);
+      setHasChanges(false);
+
+      const profileResponse = await axios.get<Profile>('/v1/auth/profile', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(profileResponse.data);
+
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 1500);
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err?.response?.data?.message || err.message);
+      } else {
+        setError('An unknown error occurred.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Paper
+        elevation={3}
+        sx={{
+          maxWidth: 400,
+          margin: 'auto',
+          marginTop: 4,
+          padding: 4,
+          borderRadius: 2,
+        }}
+      >
+        <Typography
+          variant="h4"
+          align="center"
+          gutterBottom
+          sx={{
+            fontWeight: 'bold',
+            mb: 4,
+          }}
+        >
+          Edit Profile
+        </Typography>
+
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+            >
+              <Alert
+                severity="error"
+                sx={{ mb: 2 }}
+                action={
+                  <IconButton
+                    color="inherit"
+                    size="small"
+                    onClick={() => setError('')}
+                  >
+                    <Close fontSize="inherit" />
+                  </IconButton>
+                }
+              >
+                {error}
+              </Alert>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <Box
+          {...getRootProps()}
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            mb: 4,
+            cursor: 'pointer',
+          }}
+        >
+          <input {...getInputProps()} />
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Avatar
+              alt={user?.username || 'User'}
+              src={previewUrl || user?.profilePicUrl || ''}
+              sx={{
+                width: 120,
+                height: 120,
+                mb: 2,
+                border: (theme) => `4px solid ${theme.palette.primary.main}`,
+                boxShadow: 3,
+              }}
+            />
+          </motion.div>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              color: 'text.secondary',
+            }}
+          >
+            <PhotoCamera />
+            <Typography variant="body2">
+              {isDragActive
+                ? 'Drop your image here...'
+                : 'Click or drag to change profile picture'}
+            </Typography>
+          </Box>
+        </Box>
+
+        <TextField
+          label="Username"
+          fullWidth
+          margin="normal"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          variant="outlined"
+        />
+
+        <TextField
+          label="Password"
+          type="password"
+          fullWidth
+          margin="normal"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          variant="outlined"
+          sx={{ mb: 3 }}
+        />
+
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={handleSave}
+            disabled={loading || !hasChanges}
+            startIcon={loading ? <CircularProgress size={20} /> : <Save />}
+            sx={{
+              py: 1.5,
+              textTransform: 'none',
+              fontSize: '1.1rem',
+            }}
+          >
+            {loading ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </motion.div>
+      </Paper>
+
+      <Snackbar
+        open={hasChanges}
+        message="You have unsaved changes"
+        action={
+          <Button color="secondary" size="small" onClick={handleSave}>
+            SAVE NOW
+          </Button>
+        }
+      />
+
+      <Snackbar
+        open={success}
+        autoHideDuration={1500}
+        message="Profile updated successfully!"
+      />
+    </motion.div>
+  );
+};
+
+export default EditProfileScreen;
+
+
+// screens/FeedScreen.tsx
+import { useState, useEffect, FC } from 'react';
+import axios from 'axios';
+import { Typography, Fab, Box } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import WorkoutCard from '../components/WorkoutCard';
+import { GetAllWorkoutsResponse } from '../types';
+import { useAuthStore } from '../store/authStore';
+import ProfileCard from '../components/ProfileCard';
+import SplashScreen from '../components/SplashScreen';
+import { useSplashStore } from '../store/splashStore';
+import { useTranslation } from 'react-i18next';
+import LoadingSpinner from '../components/LoadingSpinner';
+
+const ITEMS_PER_PAGE = 10;
+
+const FeedScreen: FC = () => {
+  const [workouts, setWorkouts] = useState<GetAllWorkoutsResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
+
+  const navigate = useNavigate();
+  const { token } = useAuthStore();
+  const { t } = useTranslation();
+
+  const splash = useSplashStore((state) => state.splash);
+  const setSplash = useSplashStore((state) => state.setSplash);
+
+  const fetchWorkouts = async (pageNumber: number) => {
+    try {
+      const skip = pageNumber * ITEMS_PER_PAGE;
+      const response = await axios.get(
+        `/v1/workout?limit=${ITEMS_PER_PAGE}&skip=${skip}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      const newWorkouts = response.data;
+      if (pageNumber === 0) {
+        setWorkouts(newWorkouts);
+      } else {
+        setWorkouts((prev) => [...prev, ...newWorkouts]);
+      }
+
+      setHasMore(newWorkouts.length === ITEMS_PER_PAGE);
+      setError('');
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err?.response?.data?.message || err.message);
+      } else {
+        setError('An unknown error occurred.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+    fetchWorkouts(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  const mainContentVariants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        when: 'beforeChildren',
+        staggerChildren: 0.1,
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -20,
+      transition: {
+        duration: 0.3,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchWorkouts(nextPage);
+  };
+
+  if (loading && !splash) {
+    return <LoadingSpinner message={t('app.loadingWorkouts')} />;
+  }
+
+  if (error) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <Typography variant="body1" color="error">
+          {error}
+        </Typography>
+      </motion.div>
+    );
+  }
+
+  return (
+    <AnimatePresence mode="wait">
+      {splash ? (
+        <SplashScreen onAnimationComplete={() => setSplash(false)} />
+      ) : (
+        <motion.div
+          key="main-content"
+          variants={mainContentVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          <Box sx={{ position: 'relative', p: 2, minHeight: '91.5vh' }}>
+            <motion.div variants={itemVariants}>
+              <ProfileCard />
+            </motion.div>
+
+            <InfiniteScroll
+              dataLength={workouts.length}
+              next={loadMore}
+              hasMore={hasMore}
+              loader={<LoadingSpinner message={t('app.loadingMoreWorkouts')} />}
+              endMessage={
+                <Typography variant="body2" textAlign="center" sx={{ my: 2 }}>
+                  {t('app.noMoreWorkouts')}
+                </Typography>
+              }
+            >
+              {workouts.map((workout) => (
+                <motion.div key={workout.id} variants={itemVariants}>
+                  <WorkoutCard workout={workout} />
+                </motion.div>
+              ))}
+
+              {workouts.length === 0 && (
+                <motion.div variants={itemVariants}>
+                  <Typography variant="body1">
+                    {t('app.noWorkoutsFound')}
+                  </Typography>
+                </motion.div>
+              )}
+            </InfiniteScroll>
+
+            <Fab
+              color="primary"
+              aria-label="add"
+              sx={{
+                position: 'fixed',
+                bottom: 16,
+                right: 16,
+              }}
+              onClick={() => navigate('/add-workout')}
+            >
+              <AddIcon />
+            </Fab>
+          </Box>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+export default FeedScreen;
+
+
+// screens/LogoutScreen.tsx
+import { useEffect } from 'react';
+import { useAuthStore } from '../store/authStore';
+import { useNavigate } from 'react-router-dom';
+
+const LogoutScreen = () => {
+  const { logout } = useAuthStore();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    logout();
+    navigate('/auth');
+  }, [logout, navigate]);
+
+  return <div>Αντίο</div>;
+};
+
+export default LogoutScreen;
+
+
+// screens/PwaWallScreen.tsx
+import { FC } from 'react';
+import { Box, Typography, Button } from '@mui/material';
+import { motion } from 'framer-motion';
+import { GetApp, MobileOff } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
+
+const WallScreen: FC = () => {
+  const { t } = useTranslation();
+
+  const mainVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        when: 'beforeChildren',
+        staggerChildren: 0.2,
+      },
+    },
+    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.3 } },
+  };
+
+  const iconVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: 'easeOut' },
+    },
+  };
+
+  const textVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { duration: 0.8 },
+    },
+  };
+
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={mainVariants}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        backgroundColor: '#f0f4ff',
+        padding: '16px',
+        textAlign: 'center',
+      }}
+    >
+      <motion.div variants={iconVariants}>
+        <MobileOff style={{ fontSize: 80, color: '#ff1744' }} />
+      </motion.div>
+
+      <motion.div variants={textVariants}>
+        <Typography variant="h4" gutterBottom sx={{ mt: 2, color: '#333' }}>
+          {t('wall.title')}
+        </Typography>
+        <Typography variant="body1" sx={{ mb: 4, color: '#555' }}>
+          {t('wall.instructions')}
+        </Typography>
+      </motion.div>
+
+      <motion.div variants={textVariants}>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="body2" sx={{ color: '#777' }}>
+            {t('wall.stepsTitle')}
+          </Typography>
+          <ol
+            className="list-decimal"
+            style={{ textAlign: 'left', color: '#555', margin: '16px 0' }}
+          >
+            <li>{t('wall.step1')}</li>
+            <li>{t('wall.step2')}</li>
+            <li>{t('wall.step3')}</li>
+          </ol>
+        </Box>
+      </motion.div>
+
+      <motion.div variants={iconVariants}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<GetApp />}
+          onClick={() => {
+            window.alert(t('wall.redirectMessage'));
+          }}
+        >
+          {t('wall.installButton')}
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+export default WallScreen;
+
+
+// screens/WorkoutScreen.tsx
+import { useState, useEffect, FC, FormEvent } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import {
+  Typography,
+  Box,
+  Card,
+  CardContent,
+  Avatar,
+  List,
+  ListItem,
+  ListItemText,
+  TextField,
+  Button,
+  CircularProgress,
+  IconButton,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
+import {
+  ArrowBack,
+  Delete,
+  FitnessCenter,
+  TimerOutlined,
+  Comment,
+  Send,
+} from '@mui/icons-material';
+import { useAuthStore } from '../store/authStore';
+import { GetWorkoutResponse, WorkoutMedia } from '../types';
+import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import {
+  FormatDistance,
+  FormatDistanceRelative,
+  FormatHHMM,
+} from '../components/DateComponents';
+import UsernameChip from '../components/UsernameChip';
+
+const WorkoutScreen: FC = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [workout, setWorkout] = useState<GetWorkoutResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [commentText, setCommentText] = useState('');
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
+  // const [liked, setLiked] = useState(false);
+  const { token, user } = useAuthStore();
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    const fetchWorkout = async () => {
+      try {
+        setLoading(true);
+        if (!token) throw new Error('Not logged in.');
+        const response = await axios.get(`/v1/workout/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setWorkout(response.data);
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          setError(err?.response?.data?.message || err.message);
+        } else {
+          setError('An unknown error occurred.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) fetchWorkout();
+  }, [id, token]);
+
+  const handleGoBack = () => navigate('/');
+
+  const handleCommentSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    try {
+      await axios.post(
+        `/v1/comment/workout/${id}`,
+        { text: commentText },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      setCommentText('');
+      if (id) {
+        const response = await axios.get(`/v1/workout/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setWorkout(response.data);
+      }
+    } catch (error) {
+      console.error('Error posting comment:', error);
+    }
+  };
+
+  const handleDeleteWorkout = async () => {
+    try {
+      await axios.delete(`/v1/workout/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      navigate('/', { replace: true });
+    } catch (error) {
+      console.error('Error deleting workout:', error);
+    } finally {
+      setDeleteConfirmationOpen(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      await axios.delete(`/v1/comment/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Refresh workout data to get updated comments
+      if (id) {
+        const response = await axios.get(`/v1/workout/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setWorkout(response.data);
+      }
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+
+  const renderMediaItem = (mediaItem: WorkoutMedia) => {
+    if (mediaItem.mime.includes('video')) {
+      return (
+        <video
+          controls
+          className="w-full h-[400px] object-cover"
+          src={mediaItem.url}
+        >
+          Your browser does not support the video tag.
+        </video>
+      );
+    }
+    return (
+      <img
+        src={mediaItem.url}
+        alt="Workout media"
+        className="w-full h-[400px] object-cover"
+      />
+    );
+  };
+
+  const [deleteCommentId, setDeleteCommentId] = useState<number | null>(null);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) return <Alert severity="error">{error}</Alert>;
+  if (!workout)
+    return <Typography variant="body1">Workout not found.</Typography>;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <Box sx={{ mx: 'auto', py: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, px: 1 }}>
+          <IconButton onClick={handleGoBack} sx={{ mr: 1 }}>
+            <ArrowBack />
+          </IconButton>
+          <Typography
+            variant="h5"
+            sx={{ display: 'flex', alignItems: 'center' }}
+          >
+            <FitnessCenter sx={{ mr: 1 }} />
+            {t('workout.workout')} #{workout.id}
+          </Typography>
+          {workout.user.id === user?.id && (
+            <IconButton
+              onClick={() => setDeleteConfirmationOpen(true)}
+              color="error"
+              sx={{ ml: 'auto' }}
+            >
+              <Delete />
+            </IconButton>
+          )}
+        </Box>
+
+        <Card
+          component={motion.div}
+          whileHover={{ y: -5 }}
+          sx={{ mb: 3, borderRadius: 0 }}
+        >
+          {workout.media && workout.media.length > 0 && (
+            <Box sx={{ position: 'relative' }}>
+              <Slider
+                dots
+                infinite
+                speed={500}
+                slidesToShow={workout.media.length > 1 ? 1.2 : 1}
+                slidesToScroll={1}
+                adaptiveHeight
+              >
+                {workout.media.map((media, index) => (
+                  <Box key={index}>{renderMediaItem(media)}</Box>
+                ))}
+              </Slider>
+            </Box>
+          )}
+
+          <CardContent>
+            <Box sx={{ px: 1, mt: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Avatar
+                  alt={workout.user.username}
+                  src={workout.user.profilePicUrl || ''}
+                  sx={{ width: 56, height: 56, mr: 2 }}
+                />
+                <Box>
+                  <UsernameChip
+                    points={workout.user.points || 0}
+                    username={workout.user.username}
+                  />
+                  <Typography variant="caption" color="textSecondary">
+                    <FormatDistanceRelative
+                      date={new Date(workout.createdAt)}
+                      addSuffix
+                    />
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <TimerOutlined sx={{ mr: 1 }} />
+                <Typography variant="h6">
+                  <FormatHHMM date={workout.startDate} /> -{' '}
+                  <FormatHHMM date={workout.endDate} />
+                </Typography>
+              </Box>
+
+              {workout.notes && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    gutterBottom
+                  >
+                    {t('workout.notes')}
+                  </Typography>
+                  <Typography variant="body1">{workout.notes}</Typography>
+                </Box>
+              )}
+
+              {/* <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <IconButton
+                  onClick={() => setLiked(!liked)}
+                  color={liked ? 'primary' : 'default'}
+                >
+                  <Favorite />
+                </IconButton>
+                <IconButton>
+                  <Share />
+                </IconButton>
+              </Box> */}
+
+              <Box sx={{ mt: 3 }}>
+                <Typography
+                  variant="h6"
+                  sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
+                >
+                  <Comment sx={{ mr: 1 }} />
+                  {t('comment.comments', { count: workout.comments.length })}
+                </Typography>
+
+                <Box
+                  component="form"
+                  onSubmit={handleCommentSubmit}
+                  sx={{ display: 'flex', gap: 1 }}
+                >
+                  <TextField
+                    label={t('comment.addComment')}
+                    fullWidth
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    size="small"
+                  />
+                  <IconButton
+                    type="submit"
+                    color="primary"
+                    disabled={!commentText}
+                    sx={{ alignSelf: 'center' }}
+                  >
+                    <Send />
+                  </IconButton>
+                </Box>
+
+                <List className="mt-4">
+                  <div className="h-2" />
+                  {workout.comments.map((comment) => (
+                    <ListItem
+                      key={comment.id}
+                      component={motion.div}
+                      whileHover={{ x: 5 }}
+                      sx={{
+                        bgcolor: 'background.paper',
+                        mt: -2,
+                        mb: -2,
+                        borderRadius: 1,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        p: 1,
+                      }}
+                    >
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Avatar
+                              alt={comment.user.username}
+                              src={comment.user.profilePicUrl || ''}
+                              sx={{
+                                width: 32,
+                                height: 32,
+                                mr: 1,
+                                marginTop: '1rem',
+                              }}
+                            />
+                            <Typography variant="body2" fontWeight="medium">
+                              {comment.user.username}
+                            </Typography>
+                            <div className="w-2" />
+                            <Typography
+                              sx={{ marginTop: '1px' }}
+                              variant="caption"
+                              color="textSecondary"
+                            >
+                              <FormatDistance
+                                date={new Date(comment.createdAt)}
+                                addSuffix
+                              />
+                            </Typography>
+                          </Box>
+                        }
+                        secondary={
+                          <>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                p: 0.5,
+                                marginTop: '-1rem',
+                                marginLeft: '2.28rem',
+                              }}
+                            >
+                              {comment.text}
+                            </Typography>
+                          </>
+                        }
+                      />
+                      {comment.user.id === user?.id && (
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={() => setDeleteCommentId(comment.id)}
+                          sx={{ ml: 1 }}
+                          size="small"
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      )}
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+
+        <Dialog
+          open={deleteCommentId !== null}
+          onClose={() => setDeleteCommentId(null)}
+        >
+          <DialogTitle>
+            <Delete color="error" sx={{ mr: 1 }} />
+            {t('workout.dialogs.deleteComment.title')}
+          </DialogTitle>
+          <DialogContent>
+            {t('workout.dialogs.deleteComment.confirmation')}
+            <Typography
+              sx={{ marginLeft: '-0.5px', marginTop: '4px' }}
+              variant="body2"
+              color="textSecondary"
+            >
+              {t('workout.dialogs.warning')}
+            </Typography>
+          </DialogContent>
+          <DialogActions className="mx-1">
+            <Button onClick={() => setDeleteCommentId(null)}>
+              {t('buttons.cancel')}
+            </Button>
+            <div className="grow" />
+            <Button
+              onClick={() => handleDeleteComment(deleteCommentId!)}
+              color="error"
+              startIcon={<Delete />}
+            >
+              {t('buttons.delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={deleteConfirmationOpen}
+          onClose={() => setDeleteConfirmationOpen(false)}
+        >
+          <DialogTitle>
+            <Delete color="error" sx={{ mr: 1 }} />
+            {t('workout.dialogs.deleteWorkout.title')}
+          </DialogTitle>
+          <DialogContent>
+            {t('workout.dialogs.deleteWorkout.confirmation')}
+            <Typography
+              sx={{ marginLeft: '-0.5px', marginTop: '4px' }}
+              variant="body2"
+              color="textSecondary"
+            >
+              {t('workout.dialogs.warning')}
+            </Typography>
+          </DialogContent>
+          <DialogActions className="mx-1">
+            <Button onClick={() => setDeleteConfirmationOpen(false)}>
+              {t('buttons.cancel')}
+            </Button>
+            <div className="grow" />
+            <Button
+              onClick={handleDeleteWorkout}
+              color="error"
+              startIcon={<Delete />}
+            >
+              {t('buttons.delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </motion.div>
+  );
+};
+
+export default WorkoutScreen;
+
+
+// components/DateComponents.tsx
+import {
+  formatDistanceToNow,
+  FormatDistanceToNowOptions,
+  intervalToDuration,
+  formatDuration,
+  Duration,
+  differenceInMinutes,
+  format,
+  isToday,
+  isYesterday,
+} from 'date-fns';
+import { FC } from 'react';
+import { useTranslation } from 'react-i18next';
+import { enUS, it } from 'date-fns/locale';
+import type { i18n } from 'i18next';
+import { WorkoutData } from '../types/workoutData';
+
+const getLocale = (i18n: i18n) => (i18n.language === 'it' ? it : enUS);
+
+interface FormatDistanceProps extends FormatDistanceToNowOptions {
+  date: Date;
+}
+
+export const FormatDistance: FC<FormatDistanceProps> = ({ date, ...props }) => {
+  const { i18n } = useTranslation();
+  const locale = getLocale(i18n);
+
+  return formatDistanceToNow(date, {
+    locale,
+    includeSeconds: props.includeSeconds ?? true,
+    ...props,
+  });
+};
+
+export const FormatDistanceRelative: FC<FormatDistanceProps> = ({ date }) => {
+  const { t } = useTranslation();
+
+  if (isToday(date)) {
+    return t('date.today');
+  } else if (isYesterday(date)) {
+    return t('date.yesterday');
+  } else return <FormatDuration startDate={date} endDate={new Date()} />;
+};
+
+interface FormatDurationProps
+  extends Pick<WorkoutData, 'startDate' | 'endDate'> {}
+
+export const FormatDuration: FC<FormatDurationProps> = ({
+  startDate,
+  endDate,
+}) => {
+  const { t, i18n } = useTranslation();
+  const locale = getLocale(i18n);
+
+  const duration = intervalToDuration({
+    start: startDate,
+    end: endDate,
+  });
+
+  const durationMin = differenceInMinutes(endDate, startDate);
+
+  if (!durationMin) {
+    console.error('Invalid duration:', duration);
+    return <></>;
+  }
+
+  if (durationMin < 1) {
+    return t('date.now');
+  } else if (durationMin < 60) {
+    return t('date.nMin', { count: durationMin });
+  } else if (durationMin / 60 < 24) {
+    if (duration.minutes) {
+      return `${t('date.nHr', {
+        count: duration.hours,
+      })} ${t('date.nMin', { count: duration.minutes || 0 })}`;
+    } else {
+      return t('date.nHr', {
+        count: duration.hours,
+      });
+    }
+  }
+
+  const format: (keyof Duration)[] =
+    durationMin <= 60 ? ['minutes'] : ['hours', 'minutes'];
+
+  return formatDuration(duration, { locale, format });
+};
+
+export const FormatHHMM: FC<{ date: Date }> = ({ date }) => {
+  const { i18n } = useTranslation();
+  const locale = getLocale(i18n);
+
+  return format(date, 'HH:mm', { locale });
+};
+
+
+// components/Layout.tsx
+import { FC, ReactNode, useState } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Box,
+} from '@mui/material';
+import {
+  Home,
+  Menu,
+  Edit,
+  Logout,
+  Login,
+  DarkMode,
+  LightMode,
+} from '@mui/icons-material';
+import { SwipeableDrawer } from '@mui/material';
+import { Link } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
+import useDarkModeStore from '../store/darkModeStore';
+import { useTranslation } from 'react-i18next';
+import useIsStandalone from '../hooks/isAppAndMobile';
+import PwaWallScreen from '../screens/PwaWallScreen';
+
+interface LayoutProps {
+  children: ReactNode;
+}
+
+const Layout: FC<LayoutProps> = ({ children }) => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { user } = useAuthStore();
+
+  const darkMode = useDarkModeStore((state) => state.darkMode);
+  const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
+
+  const menuItems = user
+    ? [
+        { text: 'feed', icon: <Home />, href: '/' },
+        { text: 'editProfile', icon: <Edit />, href: '/edit-profile' },
+        { text: 'logout', icon: <Logout />, href: '/logout' },
+      ]
+    : [{ text: 'login', icon: <Login />, href: '/auth' }];
+
+  const { t } = useTranslation();
+
+  const isStandalone = useIsStandalone();
+
+  const navigationList = (
+    <Box>
+      <List sx={{ pr: 2 }}>
+        {menuItems.map((item) => (
+          <Link
+            key={item.text}
+            to={item.href}
+            style={{ textDecoration: 'none', color: 'inherit' }}
+            onClick={() => setDrawerOpen(false)}
+          >
+            <ListItem>
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={t(`navigation.${item.text}`)} />
+            </ListItem>
+          </Link>
+        ))}
+      </List>
+    </Box>
+  );
+
+  return (
+    <Box sx={{ minHeight: '100vh', padding: '0' }}>
+      {import.meta.env.DEV || isStandalone ? (
+        <>
+          <AppBar position="sticky">
+            <Toolbar>
+              <IconButton
+                edge="start"
+                color="inherit"
+                onClick={() => setDrawerOpen(true)}
+              >
+                <Menu />
+              </IconButton>
+              <div className="grow" />
+              <IconButton color="inherit" onClick={toggleDarkMode}>
+                {darkMode ? <LightMode /> : <DarkMode />}
+              </IconButton>
+            </Toolbar>
+          </AppBar>
+
+          <SwipeableDrawer
+            anchor="left"
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            onOpen={() => setDrawerOpen(true)}
+          >
+            {navigationList}
+          </SwipeableDrawer>
+
+          {/* sx={{ p: 3 }} */}
+          <Box component="main">{children}</Box>
+        </>
+      ) : (
+        <PwaWallScreen />
+      )}
+    </Box>
+  );
+};
+
+export default Layout;
+
+
+// components/LoadingSpinner.tsx
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
+import { FC } from 'react';
+
+interface LoadingSpinnerProps {
+  message?: string;
+}
+const LoadingSpinner: FC<LoadingSpinnerProps> = ({
+  message = 'Loading workouts...',
+}) => {
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+      },
+    },
+  };
+
+  const spinTransition = {
+    repeat: Infinity,
+    ease: 'linear',
+    duration: 1,
+  };
+
+  const dotVariants = {
+    initial: { y: 0 },
+    animate: {
+      y: [-8, 0, -8],
+      transition: {
+        duration: 1.5,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      },
+    },
+  };
+
+  const pulseVariants = {
+    initial: { scale: 1, opacity: 0.3 },
+    animate: {
+      scale: 1.2,
+      opacity: 0,
+      transition: {
+        duration: 1,
+        repeat: Infinity,
+        ease: 'easeOut',
+      },
+    },
+  };
+
+  return (
+    <motion.div
+      className="flex flex-col items-center justify-center min-h-[200px] space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div className="relative">
+        <motion.div
+          className="absolute inset-0 w-12 h-12 rounded-full border-4 border-primary/30"
+          variants={pulseVariants}
+          initial="initial"
+          animate="animate"
+        />
+        <motion.div
+          className="relative"
+          animate={{ rotate: 360 }}
+          transition={spinTransition}
+        >
+          <Loader2 className="w-12 h-12 text-primary" />
+        </motion.div>
+      </motion.div>
+
+      <motion.div
+        className="flex flex-col items-center space-y-4"
+        variants={itemVariants}
+      >
+        <motion.p
+          className="text-lg font-medium text-primary"
+          variants={itemVariants}
+        >
+          {message}
+        </motion.p>
+
+        <div className="flex space-x-2">
+          {[0, 1, 2].map((index) => (
+            <motion.div
+              key={index}
+              className="w-2 h-2 rounded-full bg-primary/60"
+              variants={dotVariants}
+              initial="initial"
+              animate="animate"
+              transition={{
+                delay: index * 0.15,
+                duration: 1.5,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+export default LoadingSpinner;
+
+
+// components/ProfileCard.tsx
+import { Box, Avatar, Typography, Card, useTheme } from '@mui/material';
+import { useAuthStore } from '../store/authStore';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { FitnessCenter, Star } from '@mui/icons-material';
+
+const ProfileCard = () => {
+  const { user } = useAuthStore();
+
+  const { t } = useTranslation();
+
+  const theme = useTheme();
+
+  return user ? (
+    <Card className="mb-4 p-3 flex">
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <Link to="/edit-profile">
+          <Avatar
+            alt={user.username}
+            src={user.profilePicUrl || ''}
+            className="scale-150 ml-2 mr-8 border-2 border-[#BA55D3] drop-shadow-md"
+          />
+        </Link>
+      </Box>
+      <Box
+        sx={{
+          alignItems: 'center',
+        }}
+      >
+        <Typography variant="h5" fontWeight={700} color="primary">
+          <Star sx={{ mr: 0.5, fill: theme.palette.primary.light }} />
+          {user.points}
+        </Typography>
+        <Typography variant="body1" color="textSecondary">
+          {t('workout.points', {
+            count: user.points,
+          })}
+        </Typography>
+      </Box>
+      <div className="grow" />
+      <Box
+        sx={{
+          alignItems: 'center',
+          marginRight: '0.5rem',
+        }}
+      >
+        <Typography variant="h5" fontWeight={700} color="textPrimary">
+          <FitnessCenter sx={{ mr: 0.5, fill: theme.palette.text.primary }} />
+          {user._count.workouts}
+        </Typography>
+        <Typography variant="body1" color="textSecondary">
+          {t('profile.workouts', {
+            count: user._count.workouts,
+          })}
+        </Typography>
+      </Box>
+    </Card>
+  ) : (
+    <div>Not logged in...</div>
+  );
+};
+
+export default ProfileCard;
+
+
+// components/SplashScreen.tsx
+import { motion } from 'framer-motion';
+import useDarkModeStore from '../store/darkModeStore';
+
+const SplashScreen = ({
+  onAnimationComplete,
+}: {
+  onAnimationComplete: () => void;
+}) => {
+  const darkMode = useDarkModeStore((state) => state.darkMode);
+
+  return (
+    <motion.div
+      className={`flex -mt-20 justify-center items-center h-screen ${
+        darkMode ? 'bg-gray-900' : 'bg-gray-100'
+      }`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, scale: 1.1 }}
+      exit={{ opacity: 0 }}
+      transition={{
+        duration: 1.5,
+        ease: 'easeInOut',
+      }}
+      onAnimationComplete={onAnimationComplete}
+    >
+      <motion.img
+        src="/logo.png"
+        alt="Gym App Logo"
+        initial={{ scale: 0.5, rotate: 0 }}
+        animate={{ scale: 1, rotate: 360 }}
+        transition={{ duration: 1 }}
+        className="w-48 h-auto"
+      />
+    </motion.div>
+  );
+};
+
+export default SplashScreen;
+
+
+// components/UsernameChip.tsx
+import { Typography, Chip, Box } from '@mui/material';
+import { FC } from 'react';
+
+interface UsernameChipProps {
+  username: string;
+  points: number;
+  outlined?: boolean;
+}
+const UsernameChip: FC<UsernameChipProps> = ({
+  username,
+  points,
+  outlined,
+}) => {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Typography variant="h6">{username}</Typography>
+      <Chip
+        label={points || 0}
+        size={outlined ? 'small' : 'medium'}
+        color={outlined ? 'info' : 'default'}
+        variant={outlined ? 'outlined' : 'filled'}
+        sx={{
+          fontWeight: 900,
+          fontSize: '0.9rem',
+        }}
+      />
+    </Box>
+  );
+};
+
+export default UsernameChip;
+
+
+// components/WorkoutCard.tsx
+import { FC } from 'react';
+import {
+  Card,
+  CardActionArea,
+  CardContent,
+  CardMedia,
+  Typography,
+  Avatar,
+  Box,
+  useTheme,
+} from '@mui/material';
+import { Link } from 'react-router-dom';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import { GetAllWorkoutsResponse } from '../types';
+import { useTranslation } from 'react-i18next';
+import { AccessTime, Star } from '@mui/icons-material';
+import { FormatDistance, FormatDuration } from './DateComponents';
+import UsernameChip from './UsernameChip';
+
+interface WorkoutCardProps {
+  workout: GetAllWorkoutsResponse;
+}
+
+const sliderSettings = {
+  dots: true,
+  infinite: true,
+  speed: 500,
+  slidesToShow: 1,
+  slidesToScroll: 1,
+};
+
+const WorkoutCard: FC<WorkoutCardProps> = ({ workout }) => {
+  const theme = useTheme();
+
+  const { t } = useTranslation();
+
+  return (
+    <Card
+      sx={{
+        marginBottom: 3,
+        borderRadius: 0,
+        boxShadow: 3,
+        backgroundColor: theme.palette.background.paper,
+        overflow: 'hidden',
+      }}
+    >
+      <CardActionArea
+        component={Link}
+        to={`/workout/${workout.id}`}
+        sx={{
+          '&:hover': {
+            boxShadow: 4,
+          },
+        }}
+      >
+        {workout.media && workout.media.length > 0 && (
+          <Box>
+            {workout.media.length > 1 ? (
+              <Slider {...sliderSettings}>
+                {workout.media.map((media, index) => (
+                  <Box key={index}>
+                    {media.mime.includes('image') ? (
+                      <CardMedia
+                        component="img"
+                        height="200"
+                        image={media.url}
+                        alt={`Media ${index + 1} for workout ${workout.id}`}
+                      />
+                    ) : (
+                      <CardMedia
+                        component="video"
+                        height="200"
+                        src={media.url}
+                        controls
+                      />
+                    )}
+                  </Box>
+                ))}
+              </Slider>
+            ) : (
+              workout.media.map((media, index) => (
+                <Box key={index}>
+                  {media.mime.includes('image') ? (
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={media.url}
+                      alt={`Media ${index + 1} for workout ${workout.id}`}
+                    />
+                  ) : (
+                    <CardMedia
+                      component="video"
+                      height="200"
+                      src={media.url}
+                      controls
+                    />
+                  )}
+                </Box>
+              ))
+            )}
+          </Box>
+        )}
+
+        <CardContent
+          sx={{
+            padding: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            pb: 3.5,
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <Avatar
+              alt={workout.user.username}
+              src={workout.user.profilePicUrl || ''}
+              sx={{
+                width: 48,
+                height: 48,
+                border: `2px solid ${theme.palette.primary.main}`,
+              }}
+            />
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <UsernameChip
+                points={workout.user.points || 0}
+                username={workout.user.username}
+                outlined
+              />
+              <Typography variant="caption" color="textSecondary">
+                <FormatDistance date={new Date(workout.createdAt)} addSuffix />
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Star sx={{ mr: 0.5, fill: theme.palette.primary.light }} />
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 'medium',
+                  color: theme.palette.text.primary,
+                }}
+              >
+                {t('workout.points', { count: workout.points })}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <AccessTime
+                sx={{
+                  scale: 0.69,
+                  fill: theme.palette.text.secondary,
+                }}
+              />
+              <Typography
+                sx={{
+                  fontWeight: 'medium',
+                  color: theme.palette.text.secondary,
+                }}
+              >
+                <FormatDuration
+                  startDate={workout.startDate}
+                  endDate={workout.endDate}
+                />
+              </Typography>
+            </Box>
+          </Box>
+
+          {workout.notes && (
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.secondary,
+              }}
+              className="line-clamp-2"
+            >
+              {workout.notes}
+            </Typography>
+          )}
+
+          {workout._count.comments > 0 && (
+            <Typography
+              variant="body2"
+              sx={{
+                marginTop: 1,
+                fontWeight: 'medium',
+                color: theme.palette.primary.main,
+              }}
+            >
+              {t('comment.comments', { count: workout._count.comments })}
+            </Typography>
+          )}
+        </CardContent>
+      </CardActionArea>
+    </Card>
+  );
+};
+
+export default WorkoutCard;
+
+
+// types/index.ts
+// User types
+export interface Profile {
+  id: number;
+  username: string;
+  points: number;
+  profilePicUrl?: string;
+  createdAt: Date;
+  _count: {
+    workouts: number;
+    comments: number;
+  };
+}
+
+export type WorkoutUser = Pick<
+  Profile,
+  'id' | 'username' | 'profilePicUrl' | 'points'
+>;
+
+export interface CommentUser extends WorkoutUser {}
+
+export interface WorkoutMedia {
+  url: string;
+  mime: string;
+}
+
+// Comment type
+export interface WorkoutComment {
+  id: number;
+  text: string;
+  createdAt: Date;
+  user: CommentUser;
+}
+
+// Base workout type (assuming these fields from GetAllWorkoutsResponseDto)
+export interface BaseWorkout {
+  id: number;
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  description: string;
+  createdAt: Date;
+  notes?: string;
+  updatedAt: Date;
+  user: WorkoutUser;
+  media: WorkoutMedia[];
+  points: number;
+  // Add any other fields that are in GetAllWorkoutsResponseDto
+}
+
+// Response type for getting all workouts
+export interface GetAllWorkoutsResponse extends BaseWorkout {
+  // Any additional fields specific to the list view
+  _count: {
+    comments: number;
+  };
+}
+
+// Response type for getting a single workout
+export interface GetWorkoutResponse extends BaseWorkout {
+  comments: WorkoutComment[];
+}
+
+// If you need type guards
+export const isWorkoutResponse = (
+  workout: GetAllWorkoutsResponse | GetWorkoutResponse,
+): workout is GetWorkoutResponse => {
+  return 'comments' in workout;
+};
+
+// For API functions, you might use them like this:
+export type GetAllWorkoutsFunction = () => Promise<GetAllWorkoutsResponse[]>;
+export type GetWorkoutFunction = (id: number) => Promise<GetWorkoutResponse>;
+
+
+// types/workoutData.ts
+export type WorkoutData = {
+  startDate: Date;
+  endDate: Date;
+  notes: string;
+};
+
+
+// config/index.ts
+const config = {
+  firebase: {
+    config: {
+      apiKey: 'AIzaSyBD9ZUrUNnI5ceLDicrqzlXbamsoTBz_ww',
+      authDomain: 'gym-app-e01b8.firebaseapp.com',
+      projectId: 'gym-app-e01b8',
+      storageBucket: 'gym-app-e01b8.firebasestorage.app',
+      messagingSenderId: '866760602993',
+      appId: '1:866760602993:web:466d83d146760e1378b2d0',
+      measurementId: 'G-1FK3HNWSDY',
+    },
+    vapidKey:
+      'BDjpWWZQUD4yPCTQ-Ta794yKW2owpm6aLHPKDwEQbXfmrcIR4DKhrmL8gVcPo3on0JBm_3Itln6PpuZQmoP_ABo',
+  },
+};
+
+export default config;
+
+
+// themes/index.ts
+import { createTheme } from '@mui/material/styles';
+
+const lightTheme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#9400D3', // Deep Fuchsia
+      light: '#BA55D3', // Medium Orchid
+      dark: '#6A0DAD', // Deep Purple
+      contrastText: '#FFFFFF',
+    },
+    secondary: {
+      main: '#FF6B6B', // Pastel Red
+      light: '#FFD93D', // Soft Yellow
+      dark: '#6A5ACD', // Slate Blue
+      contrastText: '#000000',
+    },
+    error: {
+      main: '#FF4081', // Bright Pink
+    },
+    warning: {
+      main: '#FFA726', // Warm Orange
+    },
+    info: {
+      main: '#7E57C2', // Medium Purple
+    },
+    success: {
+      main: '#66BB6A', // Soft Green
+    },
+    background: {
+      default: '#F3E5F5', // Very Light Lavender
+      paper: '#FFFFFF',
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto, Arial, sans-serif',
+  },
+  shape: {
+    borderRadius: 12,
+  },
+});
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#BA55D3', // Medium Orchid
+      light: '#D500F9', // Bright Fuchsia
+      dark: '#6A0DAD', // Deep Purple
+      contrastText: '#FFFFFF',
+    },
+    secondary: {
+      main: '#FF6B6B', // Pastel Red
+      light: '#FF9800', // Bright Orange
+      dark: '#6A5ACD', // Slate Blue
+      contrastText: '#FFFFFF',
+    },
+    error: {
+      main: '#FF4081', // Bright Pink
+    },
+    warning: {
+      main: '#FFA726', // Warm Orange
+    },
+    info: {
+      main: '#7E57C2', // Medium Purple
+    },
+    success: {
+      main: '#66BB6A', // Soft Green
+    },
+    background: {
+      default: '#121212', // Dark Background
+      paper: '#1E1E1E', // Slightly lighter dark paper
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto, Arial, sans-serif',
+  },
+  shape: {
+    borderRadius: 12,
+  },
+});
+
+export { lightTheme, darkTheme };
+
+

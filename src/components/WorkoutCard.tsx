@@ -13,10 +13,11 @@ import { Link } from 'react-router-dom';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import FormatDistance from './FormatDistance';
 import { GetAllWorkoutsResponse } from '../types';
 import { useTranslation } from 'react-i18next';
 import { AccessTime, Star } from '@mui/icons-material';
+import { FormatDistance, FormatDuration } from './DateComponents';
+import UsernameChip from './UsernameChip';
 
 interface WorkoutCardProps {
   workout: GetAllWorkoutsResponse;
@@ -127,16 +128,12 @@ const WorkoutCard: FC<WorkoutCardProps> = ({ workout }) => {
                 border: `2px solid ${theme.palette.primary.main}`,
               }}
             />
-            <Box>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontWeight: 'bold',
-                  color: theme.palette.text.primary,
-                }}
-              >
-                {workout.user.username}
-              </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <UsernameChip
+                points={workout.user.points || 0}
+                username={workout.user.username}
+                outlined
+              />
               <Typography variant="caption" color="textSecondary">
                 <FormatDistance date={new Date(workout.createdAt)} addSuffix />
               </Typography>
@@ -169,7 +166,10 @@ const WorkoutCard: FC<WorkoutCardProps> = ({ workout }) => {
                   color: theme.palette.text.secondary,
                 }}
               >
-                {t('workout.nMinutes', { count: workout.durationMin })}
+                <FormatDuration
+                  startDate={workout.startDate}
+                  endDate={workout.endDate}
+                />
               </Typography>
             </Box>
           </Box>
