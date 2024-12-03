@@ -1,58 +1,70 @@
 {
   "app": {
-    "name": "App Palestra",
+    "name": "App palestra",
     "loadingWorkouts": "Caricamento allenamenti...",
     "loadingMoreWorkouts": "Caricamento altri allenamenti...",
     "noWorkoutsFound": "Nessun allenamento trovato",
     "noMoreWorkouts": "Hai raggiunto la fine del feed!!"
   },
   "date": {
-    "now": "Adesso",
-    "nMin": "{{count}} min",
-    "nHr_one": "1 ora",
-    "nHr_other": "{{count}} ore",
+    "now": "Proprio ora",
+    "nMin": "{{count}}min",
+    "nHours": "{{count}}h",
     "today": "Oggi",
-    "yesterday": "Ieri"
+    "yesterday": "Ieri",
+    "timeAgo": "{{time}} fa"
   },
   "auth": {
     "username": "Nome utente",
     "password": "Password",
     "login": "Accedi",
     "logout": "Esci",
-    "profileUpdated": "Profilo aggiornato correttamente!"
+    "profileUpdated": "Profilo aggiornato con successo!"
   },
   "notifications": {
-    "alert": "Ora ti chiederà di accettare le notifiche, clicca sì"
+    "alert": "Ora ti chiederà di accettare le notifiche, clicca su sì",
+    "denied": "Hai negato le notifiche, puoi abilitarle nelle impostazioni del tuo browser"
   },
   "profile": {
-    "editProfile": "Modifica Profilo",
-    "saveChanges": "Salva Modifiche",
+    "editProfile": "Modifica profilo",
     "workouts_one": "allenamento",
     "workouts_other": "allenamenti"
   },
+  "editProfile": {
+    "username": "Nome utente",
+    "password": "Password",
+    "dropImage": "Rilascia la tua immagine qui...",
+    "changeProfilePicture": "Clicca o trascina per cambiare l'immagine del profilo",
+    "saving": "Salvataggio...",
+    "errorUpdating": "Errore durante l'aggiornamento del profilo: {{error}}",
+    "success": "Profilo aggiornato con successo!"
+  },
+  "warn": {
+    "unsavedChanges": "Hai modifiche non salvate"
+  },
   "workout": {
     "workout": "Allenamento",
-    "addWorkout": "Aggiungi Allenamento",
+    "addWorkout": "Aggiungi allenamento",
     "startTime": "Ora di inizio",
     "endTime": "Ora di fine",
-    "pointsInfo": "Ogni 45 minuti di allenamento = 1 punto",
-    "points": "{{count}} Punto{{count, plural, =1 { } other {i}}}",
-    "placeholders": [
-      "Leg day incò",
-      "Dio can mo'c lavor",
-      "Ho fpancato fra",
-      "Partita a tennis con Jeb Plays TV"
-    ],
-    "longWorkoutDialog": {
-      "title": "Oo fenomen!",
-      "text": "Peso! Ti sei davvero allenato per così tanto tempo?"
-    },
-    "invalidTimeRange": "Intervallo di tempo non valido",
+    "addWorkoutInfo": "Ogni 45 minuti di allenamento ti fa guadagnare 1 punto. Puoi inserire solo l'allenamento di oggi.",
     "points_one": "{{count}} punto",
     "points_other": "{{count}} punti",
+    "placeholders": [
+      "Oggi era il giorno delle gambe",
+      "Ho messo alla panca Iheb Anter",
+      "Partita di tennis"
+    ],
+    "longWorkoutDialog": {
+      "title": "Woo!",
+      "text": "Che allenamento lungo! Ti sei allenato davvero per così tanto tempo?"
+    },
+    "invalidTimeRange": "Intervallo di tempo non valido",
     "notes": "Note",
-    "dragAndDrop": "Trascina e rilascia un'immagine o un video qui, oppure clicca per selezionare i file",
-    "max5Files": "Puoi caricare al massimo 5 file",
+    "dragAndDrop": "Trascina e rilascia un'immagine o un video qui, oppure fai clic per selezionare i file",
+    "max5Files": "Puoi caricare un massimo di 5 file",
+    "durationRequired": "La durata è obbligatoria",
+    "errorAdding": "Errore durante l'aggiunta dell'allenamento: {{error}}",
     "dialogs": {
       "deleteComment": {
         "title": "Elimina commento",
@@ -70,17 +82,37 @@
     "comments_one": "1 commento",
     "comments_other": "{{count}} commenti",
     "addComment": "Aggiungi un commento",
-    "postComment": "Invia Commento"
+    "postComment": "Pubblica commento"
   },
   "pwa": {
-    "newContentAvailable": "Nuovo contenuto disponibile, clicca sul pulsante ricarica per aggiornare",
+    "newContentAvailable": "Nuovo contenuto disponibile, fai clic sul pulsante di ricarica per aggiornare",
     "reload": "Ricarica",
     "close": "Chiudi"
   },
   "buttons": {
     "cancel": "Annulla",
     "delete": "Elimina",
-    "confirm": "Conferma"
+    "confirm": "Conferma",
+    "saveChanges": "Salva modifiche"
   },
-  "feed": "Feed"
+  "navigation": {
+    "feed": "Feed",
+    "editProfile": "Modifica profilo",
+    "logout": "Disconnetti",
+    "login": "Accedi"
+  },
+  "wall": {
+    "title": "waa fratm!",
+    "instructions": "Per usare Gym App, assicurati di essere su un dispositivo mobile e di avere installata la Progressive Web App (PWA).",
+    "stepsTitle": "Ecco i passaggi per installare l'app:",
+    "step1": "Quando te lo chiede",
+    "step2": "Clicca sì",
+    "step3": "è tutto",
+    "redirectMessage": "Passa al cellulare e installa l'app.",
+    "installButton": "Scopri di più"
+  },
+  "i18n": {
+    "en": "Inglese",
+    "it": "Italiano"
+  }
 }

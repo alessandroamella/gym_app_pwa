@@ -16,7 +16,11 @@ import 'slick-carousel/slick/slick-theme.css';
 import { GetAllWorkoutsResponse } from '../types';
 import { useTranslation } from 'react-i18next';
 import { AccessTime, Star } from '@mui/icons-material';
-import { FormatDistance, FormatDuration } from './DateComponents';
+import {
+  FormatDistance,
+  FormatDistanceRelative,
+  FormatDuration,
+} from './DateComponents';
 import UsernameChip from './UsernameChip';
 
 interface WorkoutCardProps {
@@ -42,7 +46,6 @@ const WorkoutCard: FC<WorkoutCardProps> = ({ workout }) => {
         marginBottom: 3,
         borderRadius: 0,
         boxShadow: 3,
-        backgroundColor: theme.palette.background.paper,
         overflow: 'hidden',
       }}
     >
@@ -135,7 +138,10 @@ const WorkoutCard: FC<WorkoutCardProps> = ({ workout }) => {
                 outlined
               />
               <Typography variant="caption" color="textSecondary">
-                <FormatDistance date={new Date(workout.createdAt)} addSuffix />
+                <FormatDistanceRelative
+                  date={new Date(workout.createdAt)}
+                  addSuffix
+                />
               </Typography>
             </Box>
           </Box>

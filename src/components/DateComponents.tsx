@@ -6,8 +6,7 @@ import {
   Duration,
   differenceInMinutes,
   format,
-  isToday,
-  isYesterday,
+  differenceInSeconds,
 } from 'date-fns';
 import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,33 +20,42 @@ interface FormatDistanceProps extends FormatDistanceToNowOptions {
   date: Date;
 }
 
-export const FormatDistance: FC<FormatDistanceProps> = ({ date, ...props }) => {
+export const FormatDistance: FC<FormatDistanceProps> = ({
+  date,
+  includeSeconds,
+  ...rest
+}) => {
   const { i18n } = useTranslation();
   const locale = getLocale(i18n);
 
   return formatDistanceToNow(date, {
     locale,
-    includeSeconds: props.includeSeconds ?? true,
-    ...props,
+    includeSeconds: includeSeconds ?? true,
+    ...rest,
   });
 };
 
-export const FormatDistanceRelative: FC<FormatDistanceProps> = ({ date }) => {
+export const FormatDistanceRelative: FC<FormatDistanceProps> = ({
+  date,
+  ...rest
+}) => {
   const { t } = useTranslation();
 
-  if (isToday(date)) {
-    return t('date.today');
-  } else if (isYesterday(date)) {
-    return t('date.yesterday');
-  } else return <FormatDuration startDate={date} endDate={new Date()} />;
+  if (differenceInSeconds(new Date(), date) < 60) {
+    return t('date.now');
+  } else {
+    return <FormatDistance date={date} {...rest} />;
+  }
 };
 
 interface FormatDurationProps
-  extends Pick<WorkoutData, 'startDate' | 'endDate'> {}
+  extends Pick<WorkoutData, 'startDate' | 'endDate'>,
+    FormatDistanceToNowOptions {}
 
 export const FormatDuration: FC<FormatDurationProps> = ({
   startDate,
   endDate,
+  addSuffix,
 }) => {
   const { t, i18n } = useTranslation();
   const locale = getLocale(i18n);
@@ -57,33 +65,42 @@ export const FormatDuration: FC<FormatDurationProps> = ({
     end: endDate,
   });
 
-  const durationMin = differenceInMinutes(endDate, startDate);
+  const durationMin = differenceInMinutes(endDate, startDate, {
+    roundingMethod: 'ceil',
+  });
 
   if (!durationMin) {
     console.error('Invalid duration:', duration);
     return <></>;
   }
 
+  let str;
   if (durationMin < 1) {
-    return t('date.now');
+    str = t('date.now');
   } else if (durationMin < 60) {
-    return t('date.nMin', { count: durationMin });
+    str = t('date.nMin', { count: durationMin });
   } else if (durationMin / 60 < 24) {
     if (duration.minutes) {
-      return `${t('date.nHr', {
+      str = `${t('date.nHours', {
         count: duration.hours,
       })} ${t('date.nMin', { count: duration.minutes || 0 })}`;
     } else {
-      return t('date.nHr', {
+      str = t('date.nHours', {
         count: duration.hours,
       });
     }
   }
 
+  if (str) {
+    return addSuffix ? t('date.timeAgo', { time: str }) : str;
+  }
+
   const format: (keyof Duration)[] =
     durationMin <= 60 ? ['minutes'] : ['hours', 'minutes'];
 
-  return formatDuration(duration, { locale, format });
+  str = formatDuration(duration, { locale, format });
+
+  return addSuffix ? t('date.timeAgo', { time: str }) : str;
 };
 
 export const FormatHHMM: FC<{ date: Date }> = ({ date }) => {

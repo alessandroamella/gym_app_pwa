@@ -8,6 +8,7 @@ import {
   ListItemIcon,
   ListItemText,
   Box,
+  useTheme,
 } from '@mui/material';
 import {
   Home,
@@ -26,9 +27,16 @@ import { useTranslation } from 'react-i18next';
 import useIsStandalone from '../hooks/isAppAndMobile';
 import PwaWallScreen from '../screens/PwaWallScreen';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { US, IT } from 'country-flag-icons/react/3x2';
 
 interface LayoutProps {
   children: ReactNode;
+}
+
+interface MenuItem {
+  text: string;
+  icon: JSX.Element;
+  href: string;
 }
 
 const Layout: FC<LayoutProps> = ({ children }) => {
@@ -40,21 +48,26 @@ const Layout: FC<LayoutProps> = ({ children }) => {
   const darkMode = useDarkModeStore((state) => state.darkMode);
   const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
 
-  const menuItems = user
-    ? [
-        { text: 'feed', icon: <Home />, href: '/' },
-        { text: 'editProfile', icon: <Edit />, href: '/edit-profile' },
-        { text: 'logout', icon: <Logout />, href: '/logout' },
-      ]
-    : [{ text: 'login', icon: <Login />, href: '/auth' }];
+  const menuItems: MenuItem[] = [
+    ...(user
+      ? [
+          { text: 'feed', icon: <Home />, href: '/' },
+          { text: 'editProfile', icon: <Edit />, href: '/edit-profile' },
+          { text: 'logout', icon: <Logout />, href: '/logout' },
+        ]
+      : [{ text: 'login', icon: <Login />, href: '/auth' }]),
+    { text: 'feed', icon: <Home />, href: '/' },
+  ];
 
-  const { t } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const isStandalone = useIsStandalone();
 
+  const otherLang = i18n.language === 'it' ? 'en' : 'it';
+
   const navigationList = (
     <Box>
-      <List sx={{ pr: 2 }}>
+      <List sx={{ pr: 2, minWidth: '16rem' }}>
         {menuItems.map((item) => (
           <Link
             key={item.text}
@@ -68,16 +81,37 @@ const Layout: FC<LayoutProps> = ({ children }) => {
             </ListItem>
           </Link>
         ))}
+        <button
+          onClick={() => i18n.changeLanguage(otherLang)}
+          style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+          <ListItem>
+            <ListItemIcon>
+              {otherLang === 'it' ? (
+                <IT className="w-6" />
+              ) : (
+                <US className="w-6" />
+              )}
+            </ListItemIcon>
+            <ListItemText primary={t(`i18n.${otherLang}`)} />
+          </ListItem>
+        </button>
       </List>
     </Box>
   );
+
+  const theme = useTheme();
 
   return (
     <Box sx={{ minHeight: '100vh', padding: '0' }}>
       {import.meta.env.DEV || isStandalone ? (
         <>
           <AppBar position="sticky">
-            <Toolbar>
+            <Toolbar
+              style={{
+                backgroundColor: theme.palette.primary.light,
+              }}
+            >
               <IconButton
                 edge="start"
                 color="inherit"

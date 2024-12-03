@@ -18,6 +18,8 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { Profile } from '../types';
+import { useTranslation } from 'react-i18next';
+import _ from 'lodash';
 
 const EditProfileScreen = () => {
   const [username, setUsername] = useState('');
@@ -30,6 +32,13 @@ const EditProfileScreen = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const { token, user, setUser } = useAuthStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      setUsername(user.username);
+      setPassword('');
+    }
+  }, [user]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -57,10 +66,10 @@ const EditProfileScreen = () => {
 
   useEffect(() => {
     // Check for unsaved changes
-    if (username || password || profilePic) {
+    if (username !== user?.username || password || profilePic) {
       setHasChanges(true);
     }
-  }, [username, password, profilePic]);
+  }, [username, password, profilePic, user?.username]);
 
   const handleSave = async () => {
     setLoading(true);
@@ -71,7 +80,7 @@ const EditProfileScreen = () => {
       if (username || password) {
         await axios.patch(
           '/v1/auth/profile',
-          { username, password },
+          _.omitBy({ username, password }, _.isEmpty),
           {
             headers: { Authorization: `Bearer ${token}` },
           },
@@ -89,8 +98,8 @@ const EditProfileScreen = () => {
         });
       }
 
-      setSuccess(true);
       setHasChanges(false);
+      setSuccess(true);
 
       const profileResponse = await axios.get<Profile>('/v1/auth/profile', {
         headers: { Authorization: `Bearer ${token}` },
@@ -104,12 +113,14 @@ const EditProfileScreen = () => {
       if (axios.isAxiosError(err)) {
         setError(err?.response?.data?.message || err.message);
       } else {
-        setError('An unknown error occurred.');
+        setError(t('editProfile.errorUpdating'));
       }
     } finally {
       setLoading(false);
     }
   };
+
+  const { t } = useTranslation();
 
   return (
     <motion.div
@@ -199,16 +210,18 @@ const EditProfileScreen = () => {
             }}
           >
             <PhotoCamera />
-            <Typography variant="body2">
-              {isDragActive
-                ? 'Drop your image here...'
-                : 'Click or drag to change profile picture'}
+            <Typography variant="body2" className="text-center">
+              {t(
+                isDragActive
+                  ? 'editProfile.dropImage'
+                  : 'editProfile.changeProfilePicture',
+              )}
             </Typography>
           </Box>
         </Box>
 
         <TextField
-          label="Username"
+          label={t('editProfile.username')}
           fullWidth
           margin="normal"
           value={username}
@@ -217,7 +230,7 @@ const EditProfileScreen = () => {
         />
 
         <TextField
-          label="Password"
+          label={t('editProfile.password')}
           type="password"
           fullWidth
           margin="normal"
@@ -240,17 +253,22 @@ const EditProfileScreen = () => {
               fontSize: '1.1rem',
             }}
           >
-            {loading ? 'Saving...' : 'Save Changes'}
+            {t(loading ? 'editProfile.saving' : 'buttons.saveChanges')}
           </Button>
         </motion.div>
       </Paper>
 
       <Snackbar
         open={hasChanges}
-        message="You have unsaved changes"
+        message={t('warn.unsavedChanges')}
         action={
-          <Button color="secondary" size="small" onClick={handleSave}>
-            SAVE NOW
+          <Button
+            color="secondary"
+            className="uppercase"
+            size="small"
+            onClick={handleSave}
+          >
+            {t('buttons.saveChanges')}
           </Button>
         }
       />
@@ -258,7 +276,7 @@ const EditProfileScreen = () => {
       <Snackbar
         open={success}
         autoHideDuration={1500}
-        message="Profile updated successfully!"
+        message={t('editProfile.success')}
       />
     </motion.div>
   );

@@ -309,7 +309,6 @@ const WorkoutScreen: FC = () => {
                       component={motion.div}
                       whileHover={{ x: 5 }}
                       sx={{
-                        bgcolor: 'background.paper',
                         mt: -2,
                         mb: -2,
                         borderRadius: 1,

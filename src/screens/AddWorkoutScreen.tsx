@@ -251,7 +251,6 @@ const AddWorkoutScreen = () => {
         sx={{
           maxWidth: 500,
           margin: '0 auto',
-          backgroundColor: theme.palette.background.paper,
           borderRadius: 2,
           boxShadow: 3,
           padding: 4,
@@ -330,7 +329,7 @@ const AddWorkoutScreen = () => {
                 variant="body2"
                 color="textSecondary"
               >
-                {t('workout.pointsInfo')}
+                {t('workout.addWorkoutInfo')}
               </Typography>
             )}
           </Box>

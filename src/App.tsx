@@ -58,10 +58,17 @@ const App = () => {
       }
 
       try {
-        if (Notification.permission !== 'granted') {
-          window.alert(t('notifications.alert'));
+        switch (Notification.permission) {
+          case 'default':
+            window.alert(t('notifications.alert'));
+            requestPermission();
+            break;
+          case 'denied':
+            window.alert(t('notifications.denied'));
+            break;
+          case 'granted':
+            break;
         }
-        requestPermission();
 
         const deviceToken = await firebase.getDeviceToken();
 

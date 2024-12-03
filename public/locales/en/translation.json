@@ -8,11 +8,11 @@
   },
   "date": {
     "now": "Just now",
-    "nMin": "1 min",
-    "nHours_one": "1 hr",
-    "nHours_other": "{{count}} hours",
+    "nMin": "{{count}}min",
+    "nHours": "{{count}}h",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "timeAgo": "{{time}} ago"
   },
   "auth": {
     "username": "Username",
@@ -22,23 +22,34 @@
     "profileUpdated": "Profile updated successfully!"
   },
   "notifications": {
-    "alert": "Now it will ask you to accept notifications, click yes"
+    "alert": "Now it will ask you to accept notifications, click yes",
+    "denied": "You have denied notifications, you can enable them in your browser settings"
   },
   "profile": {
     "editProfile": "Edit Profile",
-    "saveChanges": "Save Changes",
     "workouts_one": "workout",
-    "workouts_other": "workouts",
-    "points_one": "{{count}} point",
-    "points_other": "{{count}} points"
+    "workouts_other": "workouts"
+  },
+  "editProfile": {
+    "username": "Username",
+    "password": "Password",
+    "dropImage": "Drop your image here...",
+    "changeProfilePicture": "Click or drag to change profile picture",
+    "saving": "Saving...",
+    "errorUpdating": "Error updating profile: {{error}}",
+    "success": "Profile updated successfully!"
+  },
+  "warn": {
+    "unsavedChanges": "You have unsaved changes"
   },
   "workout": {
     "workout": "Workout",
     "addWorkout": "Add Workout",
     "startTime": "Start Time",
     "endTime": "End Time",
-    "pointsInfo": "Every 45 minutes of workout earns you 1 point",
-    "points": "{{count}} Point{{count, plural, =1 { } other {s}}}",
+    "addWorkoutInfo": "Every 45 minutes of workout earns you 1 point. You can only enter today's workout.",
+    "points_one": "{{count}} point",
+    "points_other": "{{count}} points",
     "placeholders": [
       "Today was leg day",
       "I benched Iheb Anter",
@@ -81,7 +92,8 @@
   "buttons": {
     "cancel": "Cancel",
     "delete": "Delete",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "saveChanges": "Save Changes"
   },
   "navigation": {
     "feed": "Feed",
@@ -98,5 +110,9 @@
     "step3": "that's it",
     "redirectMessage": "Please switch to mobile and install the app.",
     "installButton": "Learn More"
+  },
+  "i18n": {
+    "en": "English",
+    "it": "Italian"
   }
 }

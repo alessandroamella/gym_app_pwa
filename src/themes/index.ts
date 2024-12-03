@@ -1,83 +1,88 @@
 import { createTheme } from '@mui/material/styles';
 
-const lightTheme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#9400D3', // Deep Fuchsia
-      light: '#BA55D3', // Medium Orchid
-      dark: '#6A0DAD', // Deep Purple
-      contrastText: '#FFFFFF',
-    },
-    secondary: {
-      main: '#FF6B6B', // Pastel Red
-      light: '#FFD93D', // Soft Yellow
-      dark: '#6A5ACD', // Slate Blue
-      contrastText: '#000000',
-    },
-    error: {
-      main: '#FF4081', // Bright Pink
-    },
-    warning: {
-      main: '#FFA726', // Warm Orange
-    },
-    info: {
-      main: '#7E57C2', // Medium Purple
-    },
-    success: {
-      main: '#66BB6A', // Soft Green
-    },
-    background: {
-      default: '#F3E5F5', // Very Light Lavender
-      paper: '#FFFFFF',
-    },
-  },
+const commonProps = {
   typography: {
     fontFamily: 'Roboto, Arial, sans-serif',
   },
   shape: {
     borderRadius: 12,
   },
+};
+
+const lightTheme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#9400D3',
+      light: '#D500F9',
+      dark: '#6A0DAD',
+      contrastText: '#FFFFFF',
+    },
+    secondary: {
+      main: '#FF6B6B',
+      light: '#FFD93D',
+      dark: '#6A5ACD',
+      contrastText: '#000000',
+    },
+    error: {
+      main: '#FF4081',
+    },
+    warning: {
+      main: '#FFA726',
+    },
+    info: {
+      main: '#7E57C2',
+    },
+    success: {
+      main: '#66BB6A',
+    },
+    background: {
+      default: '#F3E5F5',
+      paper: '#FFFFFF',
+    },
+  },
+
+  ...commonProps,
 });
 
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
+    text: {
+      secondary: '#999',
+    },
+
     primary: {
-      main: '#BA55D3', // Medium Orchid
-      light: '#D500F9', // Bright Fuchsia
-      dark: '#6A0DAD', // Deep Purple
+      main: '#BA55D3',
+      light: '#961ca1',
+      dark: '#6A0DAD',
       contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#FF6B6B', // Pastel Red
-      light: '#FF9800', // Bright Orange
-      dark: '#6A5ACD', // Slate Blue
+      main: '#FF6B6B',
+      light: '#FF9800',
+      dark: '#6A5ACD',
       contrastText: '#FFFFFF',
     },
     error: {
-      main: '#FF4081', // Bright Pink
+      main: '#FF4081',
     },
     warning: {
-      main: '#FFA726', // Warm Orange
+      main: '#FFA726',
     },
     info: {
-      main: '#7E57C2', // Medium Purple
+      main: '#7E57C2',
     },
     success: {
-      main: '#66BB6A', // Soft Green
+      main: '#66BB6A',
     },
     background: {
-      default: '#121212', // Dark Background
-      paper: '#1E1E1E', // Slightly lighter dark paper
+      default: '#2f1a2e',
+      paper: '#1b1b1a',
     },
   },
-  typography: {
-    fontFamily: 'Roboto, Arial, sans-serif',
-  },
-  shape: {
-    borderRadius: 12,
-  },
+
+  ...commonProps,
 });
 
 export { lightTheme, darkTheme };
