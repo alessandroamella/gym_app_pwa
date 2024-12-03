@@ -14,7 +14,6 @@ import 'slick-carousel/slick/slick-theme.css';
 import { GetAllPostsResponse } from '../types/post';
 import { FormatDistanceRelative } from './DateComponents';
 import { Favorite } from '@mui/icons-material';
-import ProtectedMedia from './ProtectedMedia';
 
 interface PostCardProps {
   post: GetAllPostsResponse;
@@ -86,12 +85,7 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
               <Slider {...sliderSettings}>
                 {post.media.map((media, index) => (
                   <Box key={index}>
-                    <ProtectedMedia
-                      category="post"
-                      mediaKey={media.url}
-                      type={media.mime.includes('image') ? 'image' : 'video'}
-                    />
-                    {/* {media.mime.includes('image') ? (
+                    {media.mime.includes('image') ? (
                       <CardMedia
                         component="img"
                         height="200"
@@ -105,7 +99,7 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
                         src={media.url}
                         controls
                       />
-                    )} */}
+                    )}
                   </Box>
                 ))}
               </Slider>
