@@ -22,7 +22,7 @@ const ProfileCard = () => {
         <Link to="/edit-profile">
           <Avatar
             alt={user.username}
-            src={user.profilePicUrl || ''}
+            src={user.profilePic?.url || ''}
             className="scale-150 ml-2 mr-8 border-2 border-[#BA55D3] drop-shadow-md"
           />
         </Link>

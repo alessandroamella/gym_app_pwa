@@ -1,6 +1,6 @@
 import { useState, useEffect, FC, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -30,9 +30,9 @@ import {
   TimerOutlined,
   Comment,
   Send,
+  SentimentVeryDissatisfied,
 } from '@mui/icons-material';
 import { useAuthStore } from '../store/authStore';
-import { GetWorkoutResponse, WorkoutMedia } from '../types';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
@@ -41,6 +41,8 @@ import {
   FormatHHMM,
 } from '../components/DateComponents';
 import UsernameChip from '../components/UsernameChip';
+import { Media } from '../types/media';
+import { GetWorkoutResponse } from '../types/workout';
 
 const WorkoutScreen: FC = () => {
   const { id } = useParams();
@@ -56,25 +58,28 @@ const WorkoutScreen: FC = () => {
 
   useEffect(() => {
     const fetchWorkout = async () => {
+      if (!id || !token) return;
+
       try {
         setLoading(true);
-        if (!token) throw new Error('Not logged in.');
         const response = await axios.get(`/v1/workout/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setWorkout(response.data);
       } catch (err) {
-        if (axios.isAxiosError(err)) {
-          setError(err?.response?.data?.message || err.message);
-        } else {
-          setError('An unknown error occurred.');
+        const error = isAxiosError(err)
+          ? err.response?.data?.message
+          : (err as Error)?.message || String(err);
+        if (isAxiosError(err) && err.response?.status === 404) {
+          return;
         }
+        setError(error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) fetchWorkout();
+    fetchWorkout();
   }, [id, token]);
 
   const handleGoBack = () => navigate('/');
@@ -129,7 +134,7 @@ const WorkoutScreen: FC = () => {
     }
   };
 
-  const renderMediaItem = (mediaItem: WorkoutMedia) => {
+  const renderMediaItem = (mediaItem: Media) => {
     if (mediaItem.mime.includes('video')) {
       return (
         <video
@@ -160,9 +165,39 @@ const WorkoutScreen: FC = () => {
     );
   }
 
-  if (error) return <Alert severity="error">{error}</Alert>;
+  if (error)
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Alert severity="error">
+            {t('workout.errorFetching', { error })}
+          </Alert>
+        </Box>
+      </motion.div>
+    );
   if (!workout)
-    return <Typography variant="body1">Workout not found.</Typography>;
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          {loading ? (
+            <CircularProgress />
+          ) : (
+            <Typography variant="body1">
+              <SentimentVeryDissatisfied sx={{ mr: 1 }} />
+              {t('workout.notFound')}
+            </Typography>
+          )}
+        </Box>
+      </motion.div>
+    );
 
   return (
     <motion.div
@@ -220,7 +255,7 @@ const WorkoutScreen: FC = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Avatar
                   alt={workout.user.username}
-                  src={workout.user.profilePicUrl || ''}
+                  src={workout.user.profilePic?.url || ''}
                   sx={{ width: 56, height: 56, mr: 2 }}
                 />
                 <Box>
@@ -322,7 +357,7 @@ const WorkoutScreen: FC = () => {
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <Avatar
                               alt={comment.user.username}
-                              src={comment.user.profilePicUrl || ''}
+                              src={comment.user.profilePic?.url || ''}
                               sx={{
                                 width: 32,
                                 height: 32,

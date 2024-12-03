@@ -13,15 +13,11 @@ import { Link } from 'react-router-dom';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import { GetAllWorkoutsResponse } from '../types';
 import { useTranslation } from 'react-i18next';
 import { AccessTime, Star } from '@mui/icons-material';
-import {
-  FormatDistance,
-  FormatDistanceRelative,
-  FormatDuration,
-} from './DateComponents';
+import { FormatDistanceRelative, FormatDuration } from './DateComponents';
 import UsernameChip from './UsernameChip';
+import { GetAllWorkoutsResponse } from '../types/workout';
 
 interface WorkoutCardProps {
   workout: GetAllWorkoutsResponse;
@@ -124,7 +120,7 @@ const WorkoutCard: FC<WorkoutCardProps> = ({ workout }) => {
           >
             <Avatar
               alt={workout.user.username}
-              src={workout.user.profilePicUrl || ''}
+              src={workout.user.profilePic?.url || ''}
               sx={{
                 width: 48,
                 height: 48,

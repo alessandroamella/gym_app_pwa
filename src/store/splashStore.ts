@@ -6,6 +6,6 @@ interface SplashState {
 }
 
 export const useSplashStore = create<SplashState>()((set) => ({
-  splash: true,
+  splash: window.location.pathname === '/',
   setSplash: (splash) => set({ splash }),
 }));

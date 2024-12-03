@@ -78,7 +78,7 @@ const darkTheme = createTheme({
     },
     background: {
       default: '#2f1a2e',
-      paper: '#1b1b1a',
+      paper: '#121211',
     },
   },
 

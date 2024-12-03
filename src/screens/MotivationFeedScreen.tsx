@@ -5,19 +5,18 @@ import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import WorkoutCard from '../components/WorkoutCard';
-import { GetAllWorkoutsResponse } from '../types';
+import PostCard from '../components/PostCard';
 import { useAuthStore } from '../store/authStore';
-import ProfileCard from '../components/ProfileCard';
 import SplashScreen from '../components/SplashScreen';
 import { useSplashStore } from '../store/splashStore';
 import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { GetAllPostsResponse } from '../types/post';
 
 const ITEMS_PER_PAGE = 10;
 
-const FeedScreen: FC = () => {
-  const [workouts, setWorkouts] = useState<GetAllWorkoutsResponse[]>([]);
+const MotivationFeedScreen: FC = () => {
+  const [posts, setPosts] = useState<GetAllPostsResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [hasMore, setHasMore] = useState(true);
@@ -28,26 +27,25 @@ const FeedScreen: FC = () => {
   const { t } = useTranslation();
 
   const splash = useSplashStore((state) => state.splash);
-  const setSplash = useSplashStore((state) => state.setSplash);
 
-  const fetchWorkouts = async (pageNumber: number) => {
+  const fetchPosts = async (pageNumber: number) => {
     try {
       const skip = pageNumber * ITEMS_PER_PAGE;
       const response = await axios.get(
-        `/v1/workout?limit=${ITEMS_PER_PAGE}&skip=${skip}`,
+        `/v1/post?limit=${ITEMS_PER_PAGE}&skip=${skip}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
 
-      const newWorkouts = response.data;
+      const newPosts = response.data;
       if (pageNumber === 0) {
-        setWorkouts(newWorkouts);
+        setPosts(newPosts);
       } else {
-        setWorkouts((prev) => [...prev, ...newWorkouts]);
+        setPosts((prev) => [...prev, ...newPosts]);
       }
 
-      setHasMore(newWorkouts.length === ITEMS_PER_PAGE);
+      setHasMore(newPosts.length === ITEMS_PER_PAGE);
       setError('');
     } catch (err) {
       if (axios.isAxiosError(err)) {
@@ -64,7 +62,7 @@ const FeedScreen: FC = () => {
     if (!token) {
       return;
     }
-    fetchWorkouts(0);
+    fetchPosts(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
@@ -105,11 +103,11 @@ const FeedScreen: FC = () => {
   const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchWorkouts(nextPage);
+    fetchPosts(nextPage);
   };
 
   if (loading && !splash) {
-    return <LoadingSpinner message={t('app.loadingWorkouts')} />;
+    return <LoadingSpinner message={t('feed.loadingPosts')} />;
   }
 
   if (error) {
@@ -129,7 +127,7 @@ const FeedScreen: FC = () => {
   return (
     <AnimatePresence mode="wait">
       {splash ? (
-        <SplashScreen onAnimationComplete={() => setSplash(false)} />
+        <SplashScreen />
       ) : (
         <motion.div
           key="main-content"
@@ -138,32 +136,28 @@ const FeedScreen: FC = () => {
           animate="visible"
           exit="exit"
         >
-          <Box sx={{ position: 'relative', p: 2, minHeight: '91.5vh' }}>
-            <motion.div variants={itemVariants}>
-              <ProfileCard />
-            </motion.div>
-
+          <Box sx={{ position: 'relative', p: 2 }}>
             <InfiniteScroll
-              dataLength={workouts.length}
+              dataLength={posts.length}
               next={loadMore}
               hasMore={hasMore}
-              loader={<LoadingSpinner message={t('app.loadingMoreWorkouts')} />}
+              loader={<LoadingSpinner message={t('feed.loadingMorePosts')} />}
               endMessage={
                 <Typography variant="body2" textAlign="center" sx={{ my: 2 }}>
-                  {t('app.noMoreWorkouts')}
+                  {t('feed.noMorePosts')}
                 </Typography>
               }
             >
-              {workouts.map((workout) => (
-                <motion.div key={workout.id} variants={itemVariants}>
-                  <WorkoutCard workout={workout} />
+              {posts.map((post) => (
+                <motion.div key={post.id} variants={itemVariants}>
+                  <PostCard post={post} />
                 </motion.div>
               ))}
 
-              {workouts.length === 0 && (
+              {posts.length === 0 && (
                 <motion.div variants={itemVariants}>
                   <Typography variant="body1">
-                    {t('app.noWorkoutsFound')}
+                    {t('feed.noPostsFound')}
                   </Typography>
                 </motion.div>
               )}
@@ -177,7 +171,7 @@ const FeedScreen: FC = () => {
                 bottom: 16,
                 right: 16,
               }}
-              onClick={() => navigate('/add-workout')}
+              onClick={() => navigate('/add-post')}
             >
               <AddIcon />
             </Fab>
@@ -188,4 +182,4 @@ const FeedScreen: FC = () => {
   );
 };
 
-export default FeedScreen;
+export default MotivationFeedScreen;

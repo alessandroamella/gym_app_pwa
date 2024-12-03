@@ -12,7 +12,7 @@ import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { enUS, it } from 'date-fns/locale';
 import type { i18n } from 'i18next';
-import { WorkoutData } from '../types/workoutData';
+import { WorkoutData } from '../types/workout';
 
 const getLocale = (i18n: i18n) => (i18n.language === 'it' ? it : enUS);
 

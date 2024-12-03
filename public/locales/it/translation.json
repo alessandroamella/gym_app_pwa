@@ -26,13 +26,17 @@
     "denied": "Hai negato le notifiche, puoi abilitarle nelle impostazioni del tuo browser"
   },
   "profile": {
-    "editProfile": "Modifica profilo",
+    "profile": "Profilo",
     "workouts_one": "allenamento",
     "workouts_other": "allenamenti"
   },
   "editProfile": {
     "username": "Nome utente",
     "password": "Password",
+    "changePassword": "Cambia password",
+    "oldPassword": "Vecchia password",
+    "newPassword": "Nuova password",
+    "confirmPassword": "Conferma password",
     "dropImage": "Rilascia la tua immagine qui...",
     "changeProfilePicture": "Clicca o trascina per cambiare l'immagine del profilo",
     "saving": "Salvataggio...",
@@ -50,10 +54,11 @@
     "addWorkoutInfo": "Ogni 45 minuti di allenamento ti fa guadagnare 1 punto. Puoi inserire solo l'allenamento di oggi.",
     "points_one": "{{count}} punto",
     "points_other": "{{count}} punti",
+    "notFound": "Allenamento non trovato",
     "placeholders": [
-      "Oggi era il giorno delle gambe",
-      "Ho messo alla panca Iheb Anter",
-      "Partita di tennis"
+      "Oggi leg day!!1!",
+      "Ho spancato Iheb Anter",
+      "A 'io zughé a tennis"
     ],
     "longWorkoutDialog": {
       "title": "Woo!",
@@ -77,6 +82,12 @@
       "warning": "Questa azione non può essere annullata"
     }
   },
+  "post": {
+    "beforePostingDialog": {
+      "title": "Prima di pubblicare",
+      "text": "Ciò che viene messo qui, rimane qui."
+    }
+  },
   "comment": {
     "comments_zero": "Nessun commento",
     "comments_one": "1 commento",
@@ -93,13 +104,15 @@
     "cancel": "Annulla",
     "delete": "Elimina",
     "confirm": "Conferma",
+    "save": "Salva",
     "saveChanges": "Salva modifiche"
   },
   "navigation": {
     "feed": "Feed",
-    "editProfile": "Modifica profilo",
-    "logout": "Disconnetti",
-    "login": "Accedi"
+    "motivation": "Motivazione",
+    "profile": "Profilo",
+    "logout": "Logout",
+    "login": "Login"
   },
   "wall": {
     "title": "waa fratm!",

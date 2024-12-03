@@ -9,13 +9,16 @@ import { darkTheme, lightTheme } from './themes';
 import LogoutScreen from './screens/LogoutScreen';
 import useDarkModeStore from './store/darkModeStore';
 import AuthScreen from './screens/AuthScreen';
-import FeedScreen from './screens/FeedScreen';
+import WorkoutFeedScreen from './screens/WorkoutFeedScreen';
 import AddWorkoutScreen from './screens/AddWorkoutScreen';
 import ProtectedRoute from './ProtectedRoute';
 import WorkoutScreen from './screens/WorkoutScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import { useTranslation } from 'react-i18next';
 import firebase from './firebase';
+import MotivationFeedScreen from './screens/MotivationFeedScreen';
+import NotFoundScreen from './screens/NotFoundScreen';
+import AddPostScreen from './screens/AddPostScreen';
 
 const App = () => {
   const { setUser, logout, token } = useAuthStore();
@@ -102,46 +105,57 @@ const App = () => {
         <Routes>
           <Route path="/auth" element={<AuthScreen />} />
           <Route path="/logout" element={<LogoutScreen />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <FeedScreen />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/add-workout"
-            element={
-              <ProtectedRoute>
-                <Layout>
+          <Route element={<Layout />}>
+            <Route
+              index
+              element={
+                <ProtectedRoute>
+                  <WorkoutFeedScreen />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/motivation"
+              element={
+                <ProtectedRoute>
+                  <MotivationFeedScreen />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/add-post"
+              element={
+                <ProtectedRoute>
+                  <AddPostScreen />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/add-workout"
+              element={
+                <ProtectedRoute>
                   <AddWorkoutScreen />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/workout/:id"
-            element={
-              <ProtectedRoute>
-                <Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/workout/:id"
+              element={
+                <ProtectedRoute>
                   <WorkoutScreen />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/edit-profile"
-            element={
-              <ProtectedRoute>
-                <Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/edit-profile"
+              element={
+                <ProtectedRoute>
                   <EditProfileScreen />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
+                </ProtectedRoute>
+              }
+            />
+          </Route>
+          <Route path="*" element={<NotFoundScreen />} />
         </Routes>
       </Router>
     </ThemeProvider>

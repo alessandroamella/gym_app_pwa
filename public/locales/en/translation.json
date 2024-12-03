@@ -1,10 +1,12 @@
 {
   "app": {
-    "name": "Gym App",
-    "loadingWorkouts": "Loading workouts...",
-    "loadingMoreWorkouts": "Loading more workouts...",
-    "noWorkoutsFound": "No workouts found",
-    "noMoreWorkouts": "You have reached the end of the feed!!"
+    "name": "Gym App"
+  },
+  "feed": {
+    "loadingPosts": "Loading posts...",
+    "loadingMorePosts": "Loading more posts...",
+    "noPostsFound": "No posts found",
+    "noMorePosts": "You have reached the end of the feed!!"
   },
   "date": {
     "now": "Just now",
@@ -26,14 +28,17 @@
     "denied": "You have denied notifications, you can enable them in your browser settings"
   },
   "profile": {
-    "editProfile": "Edit Profile",
+    "profile": "Profile",
     "workouts_one": "workout",
     "workouts_other": "workouts"
   },
   "editProfile": {
     "username": "Username",
     "password": "Password",
-    "dropImage": "Drop your image here...",
+    "changePassword": "Change Password",
+    "oldPassword": "Old Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
     "changeProfilePicture": "Click or drag to change profile picture",
     "saving": "Saving...",
     "errorUpdating": "Error updating profile: {{error}}",
@@ -47,9 +52,11 @@
     "addWorkout": "Add Workout",
     "startTime": "Start Time",
     "endTime": "End Time",
+    "errorFetching": "Error fetching workout: {{error}}",
     "addWorkoutInfo": "Every 45 minutes of workout earns you 1 point. You can only enter today's workout.",
     "points_one": "{{count}} point",
     "points_other": "{{count}} points",
+    "notFound": "Workout not found",
     "placeholders": [
       "Today was leg day",
       "I benched Iheb Anter",
@@ -77,6 +84,23 @@
       "warning": "This action cannot be undone"
     }
   },
+  "addContent": {
+    "addAtLeastOne": "Please add at least one image or video",
+    "max5Files": "You can upload a maximum of 5 files",
+    "dragAndDrop": "Drag & drop an image or video here, or click to select files",
+    "dropImage": "Drop your image here...",
+    "errorUploadingMedia": "Error uploading media: {{error}}"
+  },
+  "post": {
+    "errorAdding": "Error adding post: {{error}}",
+    "placeholders": ["Iheb Anter"],
+    "addPost": "Add Post",
+    "text": "Here you go",
+    "beforePostingDialog": {
+      "title": "Before posting",
+      "text": "What gets posted here, remains here."
+    }
+  },
   "comment": {
     "comments_zero": "No comments",
     "comments_one": "1 comment",
@@ -93,11 +117,13 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "confirm": "Confirm",
+    "save": "Save",
     "saveChanges": "Save Changes"
   },
   "navigation": {
     "feed": "Feed",
-    "editProfile": "Edit Profile",
+    "motivation": "Motivation",
+    "profile": "Profile",
     "logout": "Logout",
     "login": "Login"
   },
@@ -114,5 +140,10 @@
   "i18n": {
     "en": "English",
     "it": "Italian"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Page not found",
+    "button": "Go back"
   }
 }

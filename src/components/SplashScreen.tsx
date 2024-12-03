@@ -1,17 +1,23 @@
 import { motion } from 'framer-motion';
 import useDarkModeStore from '../store/darkModeStore';
+import { useTheme } from '@mui/material';
+import { useSplashStore } from '../store/splashStore';
 
-const SplashScreen = ({
-  onAnimationComplete,
-}: {
-  onAnimationComplete: () => void;
-}) => {
+const SplashScreen = () => {
   const darkMode = useDarkModeStore((state) => state.darkMode);
+
+  const theme = useTheme();
+
+  const setSplash = useSplashStore((state) => state.setSplash);
+
+  const onAnimationComplete = () => {
+    setSplash(false);
+  };
 
   return (
     <motion.div
       className={`flex -mt-20 justify-center items-center h-screen ${
-        darkMode ? 'bg-gray-900' : 'bg-gray-100'
+        darkMode ? theme.palette.background.default : 'bg-gray-100'
       }`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, scale: 1.1 }}

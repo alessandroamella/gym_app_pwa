@@ -1,22 +1,13 @@
-import {
-  FC,
-  FormEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { FC, FormEvent, useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Button,
   TextField,
-  Box,
   Typography,
   CircularProgress,
   Snackbar,
   Alert,
   useTheme,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -24,27 +15,24 @@ import {
   DialogTitle,
   Card,
 } from '@mui/material';
-import { AccessTime } from '@mui/icons-material';
-import { parse, differenceInMinutes } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
-import axios, { AxiosError } from 'axios';
+import axios, { isAxiosError } from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { useTranslation } from 'react-i18next';
 import _ from 'lodash';
-import { FormatDuration } from '../components/DateComponents';
-import { WorkoutData } from '../types/workout';
+import { PostData } from '../types/post';
 
 const ConfirmDialog: FC<{
   isConfirmDialogOpen: boolean;
   setIsConfirmDialogOpen: (open: boolean) => void;
-  pendingSubmission: WorkoutData | null;
-  submitWorkout: (data: WorkoutData) => void;
+  pendingSubmission: PostData | null;
+  submitPost: (data: PostData) => void;
 }> = ({
   isConfirmDialogOpen,
   pendingSubmission,
   setIsConfirmDialogOpen,
-  submitWorkout,
+  submitPost,
 }) => {
   const { t } = useTranslation();
 
@@ -52,15 +40,15 @@ const ConfirmDialog: FC<{
     <Dialog
       open={isConfirmDialogOpen}
       onClose={() => setIsConfirmDialogOpen(false)}
-      aria-labelledby="long-workout-dialog-title"
-      aria-describedby="long-workout-dialog-description"
+      aria-labelledby="before-post-dialog-title"
+      aria-describedby="before-post-dialog-description"
     >
-      <DialogTitle id="long-workout-dialog-title">
-        {t('workout.longWorkoutDialog.title')}
+      <DialogTitle id="before-post-dialog-title">
+        {t('post.beforePostingDialog.title')}
       </DialogTitle>
       <DialogContent>
-        <DialogContentText id="long-workout-dialog-description">
-          {t('workout.longWorkoutDialog.text')}
+        <DialogContentText id="before-post-dialog-description">
+          {t('post.beforePostingDialog.text')}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -70,7 +58,7 @@ const ConfirmDialog: FC<{
         <Button
           onClick={() => {
             if (pendingSubmission) {
-              submitWorkout(pendingSubmission);
+              submitPost(pendingSubmission);
               setIsConfirmDialogOpen(false);
             }
           }}
@@ -85,13 +73,12 @@ const ConfirmDialog: FC<{
   );
 };
 
-const AddWorkoutScreen = () => {
+const AddPostScreen = () => {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [pendingSubmission, setPendingSubmission] =
-    useState<WorkoutData | null>(null);
-  const [startHour, setStartHour] = useState<string>('');
-  const [endHour, setEndHour] = useState<string>('');
-  const [notes, setNotes] = useState('');
+  const [pendingSubmission, setPendingSubmission] = useState<PostData | null>(
+    null,
+  );
+  const [text, setText] = useState('');
   const [files, setFiles] = useState<File[] | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [alert, setAlert] = useState<string | null>(null);
@@ -114,59 +101,25 @@ const AddWorkoutScreen = () => {
     maxFiles: 5,
   });
 
-  const [points, setPoints] = useState<number | null>(null);
-
-  const startDate = useMemo(
-    () => parse(startHour, 'HH:mm', new Date()),
-    [startHour],
-  );
-  const endDate = useMemo(() => parse(endHour, 'HH:mm', new Date()), [endHour]);
-
-  const getDurationMin = useCallback(() => {
-    return differenceInMinutes(endDate, startDate);
-  }, [startDate, endDate]);
-
-  useEffect(() => {
-    if (startHour && endHour) {
-      const durationMin = getDurationMin();
-
-      if (durationMin > 0) {
-        setPoints(Math.floor(durationMin / 45));
-      } else {
-        setPoints(null); // Reset points if duration is invalid
-      }
-    } else {
-      setPoints(null); // Reset points if times are not entered
-    }
-  }, [startHour, endHour, getDurationMin]);
-
   const handleSubmit = async (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
 
-    const durationMin = getDurationMin();
-
-    if (durationMin <= 0) {
-      setAlert(t('workout.invalidTimeRange'));
+    if (!files) {
+      setAlert(t('addContent.addAtLeastOne'));
       return;
     }
 
-    // Check for extremely long workouts (over 3 hours)
-    if (durationMin > 180) {
-      setPendingSubmission({ startDate, endDate, notes });
-      setIsConfirmDialogOpen(true);
-      return;
-    }
-
-    await submitWorkout({ startDate, endDate, notes });
+    setPendingSubmission({ text });
+    setIsConfirmDialogOpen(true);
   };
 
-  const submitWorkout = async ({ startDate, endDate, notes }: WorkoutData) => {
+  const submitPost = async ({ text }: PostData) => {
     setIsUploading(true);
 
     try {
       const { data } = await axios.post(
-        '/v1/workout',
-        { startDate, endDate, notes },
+        '/v1/post',
+        { text },
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
@@ -175,7 +128,7 @@ const AddWorkoutScreen = () => {
           for (const file of files) {
             const mediaFormData = new FormData();
             mediaFormData.append('file', file);
-            await axios.post(`/v1/media/workout/${data.id}`, mediaFormData, {
+            await axios.post(`/v1/media/post/${data.id}`, mediaFormData, {
               headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'multipart/form-data',
@@ -184,26 +137,26 @@ const AddWorkoutScreen = () => {
           }
         } catch (error) {
           console.error('Error uploading media:', error);
-          await axios.delete(`/v1/workout/${data.id}`, {
+          await axios.delete(`/v1/post/${data.id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           setAlert(
             t('addContent.errorUploadingMedia', {
-              error: JSON.stringify(
-                (error as AxiosError)?.response?.data || error,
-              ),
+              error: isAxiosError(error)
+                ? error?.response?.data?.message
+                : error,
             }),
           );
           setIsUploading(false);
           return;
         }
       }
-      navigate('/', { replace: true });
+      navigate('/motivation', { replace: true });
     } catch (error) {
-      console.error('Error adding workout:', error);
+      console.error('Error adding post:', error);
       setAlert(
-        t('workout.errorAdding', {
-          error: JSON.stringify((error as AxiosError)?.response?.data || error),
+        t('post.errorAdding', {
+          error: isAxiosError(error) ? error?.response?.data?.message : error,
         }),
       );
     } finally {
@@ -238,7 +191,7 @@ const AddWorkoutScreen = () => {
     (_e: unknown, noDelay = false, oldOne = '') => {
       setTimeout(
         () => {
-          const placeholders = t('workout.placeholders', {
+          const placeholders = t('post.placeholders', {
             returnObjects: true,
           }) as string[];
           const placeholder = _.sample(_.omit(placeholders, oldOne))!;
@@ -260,7 +213,7 @@ const AddWorkoutScreen = () => {
         isConfirmDialogOpen={isConfirmDialogOpen}
         setIsConfirmDialogOpen={setIsConfirmDialogOpen}
         pendingSubmission={pendingSubmission}
-        submitWorkout={submitWorkout}
+        submitPost={submitPost}
       />
       <motion.div
         initial="hidden"
@@ -295,101 +248,22 @@ const AddWorkoutScreen = () => {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              {t('workout.addWorkout')}
+              {t('post.addPost')}
             </Typography>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <Box display="flex" gap={2}>
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="startHour"
-                label={t('workout.startTime')}
-                name="startHour"
-                type="time"
-                value={startHour}
-                onChange={(e) => setStartHour(e.target.value)}
-                slotProps={{ inputLabel: { shrink: true } }}
-                sx={{ marginBottom: 2 }}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="endHour"
-                label={t('workout.endTime')}
-                name="endHour"
-                type="time"
-                value={endHour}
-                onChange={(e) => setEndHour(e.target.value)}
-                slotProps={{ inputLabel: { shrink: true } }}
-                sx={{ marginBottom: 2 }}
-              />
-            </Box>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <Box
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              mt={2}
-              sx={{ gap: 1 }}
-            >
-              {points !== null ? (
-                <>
-                  {startDate && endDate && (
-                    <Chip
-                      icon={<AccessTime className="scale-75" />}
-                      label={
-                        <FormatDuration
-                          startDate={startDate}
-                          endDate={endDate}
-                        />
-                      }
-                      variant="outlined"
-                      sx={{ fontSize: '1.1rem' }}
-                    />
-                  )}
-                  <Chip
-                    label={t('workout.points', { count: points })}
-                    color="success"
-                    variant="outlined"
-                    sx={{ fontWeight: 'bold', fontSize: '1.2rem' }}
-                  />
-                </>
-              ) : startHour && endHour ? (
-                <Chip
-                  label={t('workout.invalidTimeRange')}
-                  color="error"
-                  variant="outlined"
-                />
-              ) : (
-                <Typography
-                  className="text-center"
-                  variant="body2"
-                  color="textSecondary"
-                >
-                  {t('workout.addWorkoutInfo')}
-                </Typography>
-              )}
-            </Box>
           </motion.div>
 
           <motion.div variants={itemVariants}>
             <TextField
               margin="normal"
               fullWidth
-              name="notes"
-              label={t('workout.notes')}
-              id="notes"
+              name="text"
+              label={t('post.text')}
+              id="text"
               multiline
               placeholder={placeholder}
               onBlur={changePlaceholder}
               rows={4}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e) => setText(e.target.value)}
               sx={{ marginBottom: 2 }}
               onKeyDown={(e) => {
                 // on ctrl+enter submit
@@ -442,21 +316,18 @@ const AddWorkoutScreen = () => {
               type="submit"
               fullWidth
               variant="contained"
+              color="error"
               disabled={isUploading}
               sx={{
                 marginTop: 2,
                 paddingY: 1.5,
                 borderRadius: 2,
-                background: `linear-gradient(to right, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                '&:hover': {
-                  background: `linear-gradient(to right, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
-                },
               }}
             >
               {isUploading ? (
                 <CircularProgress size={24} sx={{ color: 'white' }} />
               ) : (
-                t('workout.addWorkout')
+                t('post.addPost')
               )}
             </Button>
           </motion.div>
@@ -481,4 +352,4 @@ const AddWorkoutScreen = () => {
   );
 };
 
-export default AddWorkoutScreen;
+export default AddPostScreen;
