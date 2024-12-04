@@ -70,69 +70,65 @@ const Layout = () => {
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* {import.meta.env.DEV || isStandalone ? ( */}
-      <>
-        <AppBar position="sticky">
-          <Toolbar style={{ backgroundColor: theme.palette.primary.light }}>
-            <Link to="/">
-              <Home />
-            </Link>
-            <div className="grow" /> {/* Pushes content to the right */}
-            <IconButton color="inherit" onClick={toggleDarkMode}>
-              {darkMode ? <LightMode /> : <DarkMode />}
-            </IconButton>
-            <IconButton
-              color="inherit"
-              onClick={() => i18n.changeLanguage(otherLang)}
-            >
-              {otherLang === 'it' ? (
-                <IT className="w-6" />
-              ) : (
-                <GB className="w-6" />
-              )}
-            </IconButton>
-            {user && (
-              <IconButton component={Link} to="/logout">
-                <Logout className="text-white" />
-              </IconButton>
-            )}
-          </Toolbar>
-        </AppBar>
-
-        <Box component="main" sx={{ flexGrow: 1, pb: 11, overflow: 'hidden' }}>
-          {/* Takes up available space */}
-          {needRefresh && (
-            <Box
-              sx={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                zIndex: 1000,
-                p: 2,
-                backgroundColor: 'error.main',
-                color: 'white',
-              }}
-            >
-              A new version is available!{' '}
-              <button onClick={() => updateServiceWorker()}>Update</button>
-            </Box>
-          )}
-          <Outlet />
-        </Box>
-
-        <Paper
-          sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
-          elevation={3}
+      <AppBar position="sticky">
+        <Toolbar
+          style={{ gap: 6, backgroundColor: theme.palette.primary.light }}
         >
-          <BottomNavigation showLabels value={value} onChange={handleChange}>
-            {bottomNavigationItems}
-          </BottomNavigation>
-        </Paper>
-      </>
-      {/* ) : (
-        <PwaWallScreen />
-      )} */}
+          <Link to="/">
+            <Home />
+          </Link>
+          <div className="grow" /> {/* Pushes content to the right */}
+          <IconButton color="inherit" onClick={toggleDarkMode}>
+            {darkMode ? <LightMode /> : <DarkMode />}
+          </IconButton>
+          <IconButton
+            color="inherit"
+            onClick={() => i18n.changeLanguage(otherLang)}
+          >
+            {otherLang === 'it' ? (
+              <IT className="w-6" />
+            ) : (
+              <GB className="w-6" />
+            )}
+          </IconButton>
+          {user && (
+            <IconButton component={Link} to="/logout">
+              <Logout className="text-white" />
+            </IconButton>
+          )}
+        </Toolbar>
+      </AppBar>
+
+      <Box component="main" sx={{ flexGrow: 1, pb: 11, overflow: 'hidden' }}>
+        {/* Takes up available space */}
+        {needRefresh && (
+          <Box
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1000,
+              p: 2,
+              backgroundColor: 'error.main',
+              color: 'white',
+            }}
+          >
+            A new version is available!{' '}
+            <button onClick={() => updateServiceWorker()}>Update</button>
+          </Box>
+        )}
+        <Outlet />
+      </Box>
+
+      <Paper
+        sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
+        elevation={3}
+      >
+        <BottomNavigation showLabels value={value} onChange={handleChange}>
+          {bottomNavigationItems}
+        </BottomNavigation>
+      </Paper>
     </Box>
   );
 };

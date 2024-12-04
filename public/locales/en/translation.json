@@ -66,6 +66,10 @@
       "title": "Woo!",
       "text": "That's a long workout! Did you actually workout for that long?"
     },
+    "logoutDialog": {
+      "title": "Confirm Logout",
+      "text": "Are you sure you want to log out?"
+    },
     "invalidTimeRange": "Invalid time range",
     "notes": "Notes",
     "dragAndDrop": "Drag & drop an image or video here, or click to select files",

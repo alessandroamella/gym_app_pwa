@@ -1,11 +1,12 @@
 import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import 'dotenv/config';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
-    port: 1114,
+    port: Number(process.env.PORT) || 1114,
     proxy: {
       '/v1': {
         target: 'http://localhost:1447',
@@ -26,7 +27,7 @@ export default defineConfig({
 
       manifest: {
         name: 'Gym App',
-        short_name: 'gym_app_pwa',
+        short_name: 'Gym',
         description: 'daje',
         theme_color: '#d142f5',
         icons: [

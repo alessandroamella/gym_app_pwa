@@ -52,9 +52,11 @@ const WorkoutScreen: FC = () => {
   const [error, setError] = useState('');
   const [commentText, setCommentText] = useState('');
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
-  // const [liked, setLiked] = useState(false);
-  const { token, user } = useAuthStore();
   const { t } = useTranslation();
+
+  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
 
   useEffect(() => {
     const fetchWorkout = async () => {
@@ -109,6 +111,18 @@ const WorkoutScreen: FC = () => {
       await axios.delete(`/v1/workout/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (user && workout) {
+        setUser({
+          ...user,
+          points: user.points - workout.points,
+          _count: {
+            ...user._count,
+            workouts: user._count.workouts - 1,
+          },
+        });
+      } else {
+        console.error('User or workout not found in WorkoutScreen');
+      }
       navigate('/', { replace: true });
     } catch (error) {
       console.error('Error deleting workout:', error);

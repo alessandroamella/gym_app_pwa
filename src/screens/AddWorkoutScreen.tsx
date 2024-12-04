@@ -96,9 +96,12 @@ const AddWorkoutScreen = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [alert, setAlert] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { token } = useAuthStore();
   const { t } = useTranslation();
   const theme = useTheme();
+
+  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles?.length > 0) {
@@ -198,6 +201,20 @@ const AddWorkoutScreen = () => {
           return;
         }
       }
+
+      if (user) {
+        setUser({
+          ...user,
+          points: user.points + data.points,
+          _count: {
+            ...user._count,
+            workouts: user._count.workouts + 1,
+          },
+        });
+      } else {
+        console.error('User not found in AddWorkoutScreen submitWorkout');
+      }
+
       navigate('/', { replace: true });
     } catch (error) {
       console.error('Error adding workout:', error);

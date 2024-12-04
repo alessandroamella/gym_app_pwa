@@ -1,6 +1,6 @@
 {
   "name": "Gym App",
-  "short_name": "gym_app_pwa",
+  "short_name": "Gym",
   "icons": [
     {
       "src": "pwa-64x64.png",
