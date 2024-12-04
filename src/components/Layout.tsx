@@ -23,6 +23,7 @@ import useDarkModeStore from '../store/darkModeStore';
 import { useTranslation } from 'react-i18next';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { GB, IT } from 'country-flag-icons/react/3x2';
+import LogoutDialog from './LogoutDialog';
 
 interface MenuItem {
   text: string;
@@ -40,6 +41,8 @@ const Layout = () => {
   const otherLang = i18n.language === 'it' ? 'en' : 'it';
   const location = useLocation();
   const theme = useTheme();
+
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const menuItems: MenuItem[] = [
     ...(user
@@ -69,67 +72,75 @@ const Layout = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <AppBar position="sticky">
-        <Toolbar
-          style={{ gap: 6, backgroundColor: theme.palette.primary.light }}
-        >
-          <Link to="/">
-            <Home />
-          </Link>
-          <div className="grow" /> {/* Pushes content to the right */}
-          <IconButton color="inherit" onClick={toggleDarkMode}>
-            {darkMode ? <LightMode /> : <DarkMode />}
-          </IconButton>
-          <IconButton
-            color="inherit"
-            onClick={() => i18n.changeLanguage(otherLang)}
-          >
-            {otherLang === 'it' ? (
-              <IT className="w-6" />
-            ) : (
-              <GB className="w-6" />
-            )}
-          </IconButton>
-          {user && (
-            <IconButton component={Link} to="/logout">
-              <Logout className="text-white" />
-            </IconButton>
-          )}
-        </Toolbar>
-      </AppBar>
-
-      <Box component="main" sx={{ flexGrow: 1, pb: 11, overflow: 'hidden' }}>
-        {/* Takes up available space */}
-        {needRefresh && (
-          <Box
-            sx={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              zIndex: 1000,
-              p: 2,
-              backgroundColor: 'error.main',
-              color: 'white',
-            }}
-          >
-            A new version is available!{' '}
-            <button onClick={() => updateServiceWorker()}>Update</button>
-          </Box>
-        )}
-        <Outlet />
-      </Box>
-
-      <Paper
-        sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
-        elevation={3}
+    <>
+      <LogoutDialog open={logoutDialogOpen} setOpen={setLogoutDialogOpen} />
+      <Box
+        sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
       >
-        <BottomNavigation showLabels value={value} onChange={handleChange}>
-          {bottomNavigationItems}
-        </BottomNavigation>
-      </Paper>
-    </Box>
+        <AppBar position="sticky">
+          <Toolbar
+            style={{ gap: 6, backgroundColor: theme.palette.primary.light }}
+          >
+            <Link to="/">
+              <Home />
+            </Link>
+            <div className="grow" /> {/* Pushes content to the right */}
+            <IconButton color="inherit" onClick={toggleDarkMode}>
+              {darkMode ? <LightMode /> : <DarkMode />}
+            </IconButton>
+            <IconButton
+              color="inherit"
+              onClick={() => i18n.changeLanguage(otherLang)}
+            >
+              {otherLang === 'it' ? (
+                <IT className="w-6" />
+              ) : (
+                <GB className="w-6" />
+              )}
+            </IconButton>
+            {user && (
+              <IconButton
+                component="button"
+                onClick={() => setLogoutDialogOpen(true)}
+              >
+                <Logout className="text-white" />
+              </IconButton>
+            )}
+          </Toolbar>
+        </AppBar>
+
+        <Box component="main" sx={{ flexGrow: 1, pb: 11, overflow: 'hidden' }}>
+          {/* Takes up available space */}
+          {needRefresh && (
+            <Box
+              sx={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+                p: 2,
+                backgroundColor: 'error.main',
+                color: 'white',
+              }}
+            >
+              A new version is available!{' '}
+              <button onClick={() => updateServiceWorker()}>Update</button>
+            </Box>
+          )}
+          <Outlet />
+        </Box>
+
+        <Paper
+          sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
+          elevation={3}
+        >
+          <BottomNavigation showLabels value={value} onChange={handleChange}>
+            {bottomNavigationItems}
+          </BottomNavigation>
+        </Paper>
+      </Box>
+    </>
   );
 };
 

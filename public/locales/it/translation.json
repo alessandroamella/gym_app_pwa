@@ -87,6 +87,10 @@
       "warning": "Questa azione non può essere annullata"
     }
   },
+  "logoutDialog": {
+    "title": "Conferma logout",
+    "text": "Sei sicuro di voler uscire?"
+  },
   "media": {
     "addAtLeastOne": "Aggiungi almeno un'immagine o un video",
     "max5Files": "Puoi caricare un massimo di 5 file",
