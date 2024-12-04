@@ -17,4 +17,4 @@ export interface PostLike {
   createdAt: Date;
 }
 
-export interface GetAllPostsResponse extends BasePost {}
+export type GetAllPostsResponse = BasePost;

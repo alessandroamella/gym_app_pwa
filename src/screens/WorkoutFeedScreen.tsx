@@ -1,4 +1,4 @@
-import { useState, useEffect, FC } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Typography, Fab, Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -16,7 +16,7 @@ import { GetAllWorkoutsResponse } from '../types/workout';
 
 const ITEMS_PER_PAGE = 10;
 
-const feedScreen: FC = () => {
+const WorkoutFeedScreen = () => {
   const [workouts, setWorkouts] = useState<GetAllWorkoutsResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -66,6 +66,7 @@ const feedScreen: FC = () => {
 
   useEffect(() => {
     fetchWorkouts(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const mainContentVariants = {
@@ -188,4 +189,4 @@ const feedScreen: FC = () => {
   );
 };
 
-export default feedScreen;
+export default WorkoutFeedScreen;

@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import _ from 'lodash';
 
 interface ChangePasswordDialogProps {
   open: boolean;

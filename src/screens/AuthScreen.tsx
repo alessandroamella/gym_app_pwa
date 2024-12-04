@@ -18,16 +18,17 @@ const AuthScreen = () => {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    setError('');
     try {
       const response = await axios.post('/v1/auth/login', {
         username,
         password,
       });
       setToken(response.data.token);
-      const profileResponse = await axios.get('/v1/auth/profile', {
+      const { data } = await axios.get('/v1/auth/profile', {
         headers: { Authorization: `Bearer ${response.data.token}` },
       });
-      setUser(profileResponse.data);
+      setUser(data);
       navigate(from, { replace: true });
     } catch (err) {
       setError(

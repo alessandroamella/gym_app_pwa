@@ -12,7 +12,6 @@ import { useSplashStore } from '../store/splashStore';
 import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { GetAllPostsResponse } from '../types/post';
-import _ from 'lodash';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -75,6 +74,7 @@ const MotivationFeedScreen: FC = () => {
 
   useEffect(() => {
     fetchPosts(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const mainContentVariants = {
