@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import { cleanEnv, str, url, port as portEnv } from 'envalid';
 import { cwd } from 'process';
+import 'dotenv/config';
 
 // eslint-disable-next-line no-undef
 const env = cleanEnv(process.env, {
