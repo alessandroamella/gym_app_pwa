@@ -125,7 +125,7 @@ importers:
         specifier: ^8.0.0
         version: 8.16.0(eslint@8.57.1)(typescript@5.6.3)
       '@vite-pwa/assets-generator':
-        specifier: ^0.2.4
+        specifier: ^0.2.6
         version: 0.2.6
       '@vitejs/plugin-react':
         specifier: ^4.2.1
