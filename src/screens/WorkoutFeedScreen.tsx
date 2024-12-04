@@ -30,9 +30,13 @@ const feedScreen: FC = () => {
   const splash = useSplashStore((state) => state.splash);
 
   const fetchWorkouts = async (pageNumber: number) => {
+    if (!token) {
+      return;
+    }
+
     try {
       const skip = pageNumber * ITEMS_PER_PAGE;
-      const response = await axios.get(
+      const response = await axios.get<GetAllWorkoutsResponse[]>(
         `/v1/workout?limit=${ITEMS_PER_PAGE}&skip=${skip}`,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -52,6 +56,7 @@ const feedScreen: FC = () => {
       if (axios.isAxiosError(err)) {
         setError(err?.response?.data?.message || err.message);
       } else {
+        console.error('An unknown error occurred:', err);
         setError('An unknown error occurred.');
       }
     } finally {
@@ -60,11 +65,7 @@ const feedScreen: FC = () => {
   };
 
   useEffect(() => {
-    if (!token) {
-      return;
-    }
     fetchWorkouts(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const mainContentVariants = {
@@ -173,7 +174,7 @@ const feedScreen: FC = () => {
               aria-label="add"
               sx={{
                 position: 'fixed',
-                bottom: 16,
+                bottom: 64,
                 right: 16,
               }}
               onClick={() => navigate('/add-workout')}

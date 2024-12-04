@@ -135,23 +135,20 @@ const WorkoutScreen: FC = () => {
   };
 
   const renderMediaItem = (mediaItem: Media) => {
-    if (mediaItem.mime.includes('video')) {
-      return (
-        <video
-          controls
-          className="w-full h-[400px] object-cover"
-          src={mediaItem.url}
-        >
-          Your browser does not support the video tag.
-        </video>
-      );
-    }
-    return (
+    return mediaItem.mime.includes('image') ? (
       <img
         src={mediaItem.url}
-        alt="Workout media"
+        alt={`Uploaded media for workout ${workout?.id}`}
         className="w-full h-[400px] object-cover"
       />
+    ) : (
+      <video
+        controls
+        className="w-full h-[400px] object-cover"
+        src={mediaItem.url}
+      >
+        {t('media.videoNotSupported')}
+      </video>
     );
   };
 

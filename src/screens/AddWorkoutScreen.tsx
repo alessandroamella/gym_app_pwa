@@ -104,7 +104,7 @@ const AddWorkoutScreen = () => {
     if (acceptedFiles?.length > 0) {
       setFiles(acceptedFiles);
     } else {
-      setAlert(t('addContent.max5Files'));
+      setAlert(t('media.max5Files'));
     }
   };
 
@@ -188,7 +188,7 @@ const AddWorkoutScreen = () => {
             headers: { Authorization: `Bearer ${token}` },
           });
           setAlert(
-            t('addContent.errorUploadingMedia', {
+            t('media.errorUploadingMedia', {
               error: JSON.stringify(
                 (error as AxiosError)?.response?.data || error,
               ),
@@ -430,7 +430,7 @@ const AddWorkoutScreen = () => {
                   transition={{ duration: 0.2 }}
                 >
                   <Typography variant="body2" color="textSecondary">
-                    {t('addContent.dragAndDrop')}
+                    {t('media.dragAndDrop')}
                   </Typography>
                 </motion.div>
               )}

@@ -12,6 +12,7 @@ import { useSplashStore } from '../store/splashStore';
 import { useTranslation } from 'react-i18next';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { GetAllPostsResponse } from '../types/post';
+import _ from 'lodash';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -29,16 +30,29 @@ const MotivationFeedScreen: FC = () => {
   const splash = useSplashStore((state) => state.splash);
 
   const fetchPosts = async (pageNumber: number) => {
+    if (!token) {
+      return;
+    }
+
     try {
       const skip = pageNumber * ITEMS_PER_PAGE;
-      const response = await axios.get(
+      const response = await axios.get<GetAllPostsResponse[]>(
         `/v1/post?limit=${ITEMS_PER_PAGE}&skip=${skip}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
 
-      const newPosts = response.data;
+      const newPosts = response.data.map((post) => ({
+        ...post,
+        media: post.media.map((m) => {
+          const newUrl = new URL(m.url, window.location.origin);
+          newUrl.searchParams.set('token', token);
+          const url = newUrl.toString();
+
+          return { ...m, url };
+        }),
+      }));
       if (pageNumber === 0) {
         setPosts(newPosts);
       } else {
@@ -51,6 +65,7 @@ const MotivationFeedScreen: FC = () => {
       if (axios.isAxiosError(err)) {
         setError(err?.response?.data?.message || err.message);
       } else {
+        console.error('An unknown error occurred:', err);
         setError('An unknown error occurred.');
       }
     } finally {
@@ -59,11 +74,7 @@ const MotivationFeedScreen: FC = () => {
   };
 
   useEffect(() => {
-    if (!token) {
-      return;
-    }
     fetchPosts(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const mainContentVariants = {
@@ -168,7 +179,7 @@ const MotivationFeedScreen: FC = () => {
               aria-label="add"
               sx={{
                 position: 'fixed',
-                bottom: 16,
+                bottom: 64,
                 right: 16,
               }}
               onClick={() => navigate('/add-post')}

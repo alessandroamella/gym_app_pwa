@@ -84,12 +84,13 @@
       "warning": "This action cannot be undone"
     }
   },
-  "addContent": {
+  "media": {
     "addAtLeastOne": "Please add at least one image or video",
     "max5Files": "You can upload a maximum of 5 files",
     "dragAndDrop": "Drag & drop an image or video here, or click to select files",
     "dropImage": "Drop your image here...",
-    "errorUploadingMedia": "Error uploading media: {{error}}"
+    "errorUploadingMedia": "Error uploading media: {{error}}",
+    "videoNotSupported": "Video not supported"
   },
   "post": {
     "errorAdding": "Error adding post: {{error}}",

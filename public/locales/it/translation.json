@@ -3,8 +3,13 @@
     "name": "App palestra",
     "loadingWorkouts": "Caricamento allenamenti...",
     "loadingMoreWorkouts": "Caricamento altri allenamenti...",
-    "noWorkoutsFound": "Nessun allenamento trovato",
-    "noMoreWorkouts": "Hai raggiunto la fine del feed!!"
+    "noWorkoutsFound": "Nessun allenamento trovato"
+  },
+  "feed": {
+    "loadingPosts": "Caricamento post...",
+    "loadingMorePosts": "Caricamento altri post...",
+    "noPostsFound": "Nessun post trovato",
+    "noMorePosts": "Hai raggiunto la fine del feed!!"
   },
   "date": {
     "now": "Proprio ora",
@@ -82,10 +87,22 @@
       "warning": "Questa azione non può essere annullata"
     }
   },
+  "media": {
+    "addAtLeastOne": "Aggiungi almeno un'immagine o un video",
+    "max5Files": "Puoi caricare un massimo di 5 file",
+    "dragAndDrop": "Trascina e rilascia un'immagine o un video qui, oppure fai clic per selezionare i file",
+    "dropImage": "Rilascia la tua immagine qui...",
+    "errorUploadingMedia": "Errore durante il caricamento dei media: {{error}}",
+    "videoNotSupported": "Video non supportato"
+  },
   "post": {
+    "errorAdding": "Errore durante l'aggiunta del post: {{error}}",
+    "placeholders": ["Iheb Anter"],
+    "addPost": "Aggiungi post",
+    "text": "Prego",
     "beforePostingDialog": {
       "title": "Prima di pubblicare",
-      "text": "Ciò che viene messo qui, rimane qui."
+      "text": "Ciò che viene pubblicato qui, rimane qui."
     }
   },
   "comment": {

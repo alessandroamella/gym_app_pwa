@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -11,9 +11,12 @@ import {
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import { GetAllPostsResponse } from '../types/post';
+import type { GetAllPostsResponse, PostLike } from '../types/post';
 import { FormatDistanceRelative } from './DateComponents';
 import { Favorite } from '@mui/icons-material';
+import { useAuthStore } from '../store/authStore';
+import { useDoubleTap } from 'use-double-tap';
+import axios from 'axios';
 
 interface PostCardProps {
   post: GetAllPostsResponse;
@@ -30,8 +33,60 @@ const sliderSettings = {
 const PostCard: FC<PostCardProps> = ({ post }) => {
   const theme = useTheme();
 
+  const user = useAuthStore((state) => state.user);
+  const token = useAuthStore((state) => state.token);
+
+  const [likes, setLikes] = useState<PostLike[]>(post.likes);
+
+  async function toggleLike() {
+    try {
+      const response = await axios.post(
+        `/v1/post/${post.id}/like`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      // 201 = liked
+      // 200 = unliked
+      const liked = response.status === 201;
+
+      // update the post in the list
+      const _likes = liked
+        ? [...likes, response.data as PostLike]
+        : likes.filter((like) => like.user.id !== user?.id);
+      setLikes(_likes);
+    } catch (err) {
+      console.error('Failed to toggle like:', err);
+    }
+  }
+
+  const bindDoubleTap = useDoubleTap((event) => {
+    console.log('Double tap event:', event);
+    toggleLike();
+  });
+
+  const renderMedia = () => {
+    return post.media.map((media, index) => (
+      <Box key={index}>
+        {media.mime.includes('image') ? (
+          <CardMedia
+            component="img"
+            height="200"
+            className="min-h-80 h-full w-full object-cover"
+            image={media.url}
+            alt={`Media ${index + 1} for post ${post.id}`}
+          />
+        ) : (
+          <CardMedia component="video" height="200" src={media.url} controls />
+        )}
+      </Box>
+    ));
+  };
+
   return (
     <Card
+      {...bindDoubleTap}
       sx={{
         marginBottom: 3,
         borderRadius: 0,
@@ -51,8 +106,12 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
             alignItems: 'center',
             gap: 1,
             position: 'absolute',
-            top: 10,
-            left: 10,
+            top: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+            p: 1,
+            left: 0,
+            right: 0,
+            zIndex: 1,
           }}
         >
           <Avatar
@@ -82,47 +141,9 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
         {post.media && (
           <Box sx={{ mx: -3, position: 'relative' }}>
             {post.media.length > 1 ? (
-              <Slider {...sliderSettings}>
-                {post.media.map((media, index) => (
-                  <Box key={index}>
-                    {media.mime.includes('image') ? (
-                      <CardMedia
-                        component="img"
-                        height="200"
-                        image={media.url}
-                        alt={`Media ${index + 1} for post ${post.id}`}
-                      />
-                    ) : (
-                      <CardMedia
-                        component="video"
-                        height="200"
-                        src={media.url}
-                        controls
-                      />
-                    )}
-                  </Box>
-                ))}
-              </Slider>
+              <Slider {...sliderSettings}>{renderMedia()}</Slider>
             ) : (
-              post.media.map((media, index) => (
-                <Box key={index}>
-                  {media.mime.includes('image') ? (
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={media.url}
-                      alt={`Media ${index + 1} for post ${post.id}`}
-                    />
-                  ) : (
-                    <CardMedia
-                      component="video"
-                      height="200"
-                      src={media.url}
-                      controls
-                    />
-                  )}
-                </Box>
-              ))
+              renderMedia()
             )}
 
             {post.text && (
@@ -173,15 +194,18 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
             sx={{
               fontWeight: 'medium',
             }}
+            onClick={toggleLike}
           >
             <Favorite
               style={{
-                color: 'red',
+                color: likes.some((like) => like.user.id === user?.id)
+                  ? 'red'
+                  : theme.palette.text.secondary,
                 marginRight: theme.spacing(0.3),
                 fontSize: '1.2rem',
               }}
             />
-            {post.likes.length}
+            {likes.length}
           </Typography>
         </Box>
       </CardContent>

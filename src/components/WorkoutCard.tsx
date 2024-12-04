@@ -36,6 +36,24 @@ const WorkoutCard: FC<WorkoutCardProps> = ({ workout }) => {
 
   const { t } = useTranslation();
 
+  const renderMedia = () => {
+    return workout.media.map((media, index) => (
+      <Box key={index}>
+        {media.mime.includes('image') ? (
+          <CardMedia
+            component="img"
+            height="200"
+            className="min-h-80 h-full w-full object-cover"
+            image={media.url}
+            alt={`Media ${index + 1} for workout ${workout.id}`}
+          />
+        ) : (
+          <CardMedia component="video" height="200" src={media.url} controls />
+        )}
+      </Box>
+    ));
+  };
+
   return (
     <Card
       sx={{
@@ -57,47 +75,9 @@ const WorkoutCard: FC<WorkoutCardProps> = ({ workout }) => {
         {workout.media && workout.media.length > 0 && (
           <Box>
             {workout.media.length > 1 ? (
-              <Slider {...sliderSettings}>
-                {workout.media.map((media, index) => (
-                  <Box key={index}>
-                    {media.mime.includes('image') ? (
-                      <CardMedia
-                        component="img"
-                        height="200"
-                        image={media.url}
-                        alt={`Media ${index + 1} for workout ${workout.id}`}
-                      />
-                    ) : (
-                      <CardMedia
-                        component="video"
-                        height="200"
-                        src={media.url}
-                        controls
-                      />
-                    )}
-                  </Box>
-                ))}
-              </Slider>
+              <Slider {...sliderSettings}>{renderMedia()}</Slider>
             ) : (
-              workout.media.map((media, index) => (
-                <Box key={index}>
-                  {media.mime.includes('image') ? (
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={media.url}
-                      alt={`Media ${index + 1} for workout ${workout.id}`}
-                    />
-                  ) : (
-                    <CardMedia
-                      component="video"
-                      height="200"
-                      src={media.url}
-                      controls
-                    />
-                  )}
-                </Box>
-              ))
+              renderMedia()
             )}
           </Box>
         )}
@@ -149,10 +129,13 @@ const WorkoutCard: FC<WorkoutCardProps> = ({ workout }) => {
                 variant="h6"
                 sx={{
                   fontWeight: 'medium',
-                  color: theme.palette.text.primary,
+                  color:
+                    workout.points > 0
+                      ? theme.palette.text.primary
+                      : theme.palette.text.secondary,
                 }}
               >
-                {t('workout.points', { count: workout.points })}
+                +{t('workout.points', { count: workout.points })}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>

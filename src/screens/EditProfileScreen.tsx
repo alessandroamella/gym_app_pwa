@@ -248,7 +248,7 @@ const EditProfileScreen = () => {
               <Typography variant="body2" className="text-center">
                 {t(
                   isDragActive
-                    ? 'addContent.dropImage'
+                    ? 'media.dropImage'
                     : 'editProfile.changeProfilePicture',
                 )}
               </Typography>

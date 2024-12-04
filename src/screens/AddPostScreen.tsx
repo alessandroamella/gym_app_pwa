@@ -91,7 +91,7 @@ const AddPostScreen = () => {
     if (acceptedFiles?.length > 0) {
       setFiles(acceptedFiles);
     } else {
-      setAlert(t('addContent.max5Files'));
+      setAlert(t('media.max5Files'));
     }
   };
 
@@ -105,7 +105,7 @@ const AddPostScreen = () => {
     event?.preventDefault();
 
     if (!files) {
-      setAlert(t('addContent.addAtLeastOne'));
+      setAlert(t('media.addAtLeastOne'));
       return;
     }
 
@@ -141,7 +141,7 @@ const AddPostScreen = () => {
             headers: { Authorization: `Bearer ${token}` },
           });
           setAlert(
-            t('addContent.errorUploadingMedia', {
+            t('media.errorUploadingMedia', {
               error: isAxiosError(error)
                 ? error?.response?.data?.message
                 : error,
@@ -304,7 +304,7 @@ const AddPostScreen = () => {
                   transition={{ duration: 0.2 }}
                 >
                   <Typography variant="body2" color="textSecondary">
-                    {t('addContent.dragAndDrop')}
+                    {t('media.dragAndDrop')}
                   </Typography>
                 </motion.div>
               )}
