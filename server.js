@@ -67,7 +67,7 @@ app.use((req, res, next) => {
 });
 
 // Serve public directory
-app.use(express.static(join(cwd(), '../public')));
+app.use(express.static(join(cwd(), './public')));
 
 ViteExpress.listen(app, port, () => {
   console.log(`Server is running on http://localhost:${port}`);
