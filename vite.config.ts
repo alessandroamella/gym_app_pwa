@@ -29,6 +29,18 @@ export default defineConfig({
         short_name: 'gym_app_pwa',
         description: 'daje',
         theme_color: '#d142f5',
+        icons: [
+          {
+            src: '/web-app-manifest-512x512.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/web-app-manifest-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
       },
 
       workbox: {
