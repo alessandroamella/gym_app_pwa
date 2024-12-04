@@ -58,6 +58,14 @@ app.use(
   }),
 );
 
+// Serve public directory and set MIME type for manifest.webmanifest
+app.use((req, res, next) => {
+  if (req.url.endsWith('.webmanifest')) {
+    res.setHeader('Content-Type', 'application/manifest+json');
+  }
+  next();
+});
+
 // Serve public directory
 app.use(express.static(join(cwd(), '../public')));
 
