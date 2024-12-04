@@ -16,6 +16,8 @@ import {
   Login,
   DarkMode,
   LightMode,
+  Pets,
+  FitnessCenter,
 } from '@mui/icons-material';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -47,8 +49,8 @@ const Layout = () => {
   const menuItems: MenuItem[] = [
     ...(user
       ? [
-          { text: 'feed', icon: <Home />, href: '/' },
-          { text: 'motivation', icon: <Home />, href: '/motivation' },
+          { text: 'feed', icon: <FitnessCenter />, href: '/' },
+          { text: 'motivation', icon: <Pets />, href: '/motivation' },
           { text: 'profile', icon: <Person />, href: '/edit-profile' },
         ]
       : [{ text: 'login', icon: <Login />, href: '/auth' }]),

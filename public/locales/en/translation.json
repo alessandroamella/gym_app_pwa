@@ -6,7 +6,9 @@
     "loadingPosts": "Loading posts...",
     "loadingMorePosts": "Loading more posts...",
     "noPostsFound": "No posts found",
-    "noMorePosts": "You have reached the end of the feed!!"
+    "noMorePosts": "You have reached the end of the feed!!",
+    "welcomeTitle": "Being motivated",
+    "welcomeMessage": "What you see here, stays here (medias are NOT public, need auth token to view)"
   },
   "date": {
     "now": "Just now",
@@ -122,6 +124,7 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "confirm": "Confirm",
+    "ok": "OK",
     "save": "Save",
     "saveChanges": "Save Changes"
   },

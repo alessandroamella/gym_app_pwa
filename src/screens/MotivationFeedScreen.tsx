@@ -1,6 +1,15 @@
 import { useState, useEffect, FC } from 'react';
 import axios from 'axios';
-import { Typography, Fab, Box } from '@mui/material';
+import {
+  Typography,
+  Fab,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,6 +23,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { GetAllPostsResponse } from '../types/post';
 
 const ITEMS_PER_PAGE = 10;
+const WELCOME_DIALOG_KEY = 'welcome-dialog-shown';
 
 const MotivationFeedScreen: FC = () => {
   const [posts, setPosts] = useState<GetAllPostsResponse[]>([]);
@@ -21,6 +31,20 @@ const MotivationFeedScreen: FC = () => {
   const [error, setError] = useState('');
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
+
+  const [showDialog, setShowDialog] = useState(false);
+  useEffect(() => {
+    const hasShownDialog = localStorage.getItem(WELCOME_DIALOG_KEY);
+    console.log('hasShownDialog:', hasShownDialog);
+    if (!hasShownDialog) {
+      setShowDialog(true);
+    }
+  }, []);
+
+  const handleCloseDialog = () => {
+    setShowDialog(false);
+    localStorage.setItem(WELCOME_DIALOG_KEY, 'true');
+  };
 
   const navigate = useNavigate();
   const { token } = useAuthStore();
@@ -140,54 +164,69 @@ const MotivationFeedScreen: FC = () => {
       {splash ? (
         <SplashScreen />
       ) : (
-        <motion.div
-          key="main-content"
-          variants={mainContentVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
-          <Box sx={{ position: 'relative', p: 2 }}>
-            <InfiniteScroll
-              dataLength={posts.length}
-              next={loadMore}
-              hasMore={hasMore}
-              loader={<LoadingSpinner message={t('feed.loadingMorePosts')} />}
-              endMessage={
-                <Typography variant="body2" textAlign="center" sx={{ my: 2 }}>
-                  {t('feed.noMorePosts')}
-                </Typography>
-              }
-            >
-              {posts.map((post) => (
-                <motion.div key={post.id} variants={itemVariants}>
-                  <PostCard post={post} />
-                </motion.div>
-              ))}
-
-              {posts.length === 0 && (
-                <motion.div variants={itemVariants}>
-                  <Typography variant="body1">
-                    {t('feed.noPostsFound')}
+        <>
+          <Dialog open={showDialog} onClose={handleCloseDialog}>
+            <DialogTitle>{t('feed.welcomeTitle')}</DialogTitle>
+            <DialogContent>
+              <Typography variant="body1">
+                {t('feed.welcomeMessage')}
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDialog} color="primary" autoFocus>
+                {t('buttons.ok')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <motion.div
+            key="main-content"
+            variants={mainContentVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <Box sx={{ position: 'relative', p: 2 }}>
+              <InfiniteScroll
+                dataLength={posts.length}
+                next={loadMore}
+                hasMore={hasMore}
+                loader={<LoadingSpinner message={t('feed.loadingMorePosts')} />}
+                endMessage={
+                  <Typography variant="body2" textAlign="center" sx={{ my: 2 }}>
+                    {t('feed.noMorePosts')}
                   </Typography>
-                </motion.div>
-              )}
-            </InfiniteScroll>
+                }
+              >
+                {posts.map((post) => (
+                  <motion.div key={post.id} variants={itemVariants}>
+                    <PostCard post={post} blur={showDialog} />
+                  </motion.div>
+                ))}
 
-            <Fab
-              color="primary"
-              aria-label="add"
-              sx={{
-                position: 'fixed',
-                bottom: 64,
-                right: 16,
-              }}
-              onClick={() => navigate('/add-post')}
-            >
-              <AddIcon />
-            </Fab>
-          </Box>
-        </motion.div>
+                {posts.length === 0 && (
+                  <motion.div variants={itemVariants}>
+                    <Typography variant="body1">
+                      {t('feed.noPostsFound')}
+                    </Typography>
+                  </motion.div>
+                )}
+              </InfiniteScroll>
+
+              <Fab
+                color="primary"
+                aria-label="add"
+                sx={{
+                  position: 'fixed',
+                  bottom: 64,
+                  right: 16,
+                }}
+                onClick={() => navigate('/add-post')}
+              >
+                <AddIcon />
+              </Fab>
+            </Box>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );

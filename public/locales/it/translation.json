@@ -9,7 +9,9 @@
     "loadingPosts": "Caricamento post...",
     "loadingMorePosts": "Caricamento altri post...",
     "noPostsFound": "Nessun post trovato",
-    "noMorePosts": "Hai raggiunto la fine del feed!!"
+    "noMorePosts": "Hai raggiunto la fine del feed!!",
+    "welcomeTitle": "Essere motivati",
+    "welcomeMessage": "Ciò che vedi qui, rimane qui (i media NON sono pubblici, è necessario un auth token per visualizzarli)"
   },
   "date": {
     "now": "Proprio ora",
@@ -125,6 +127,7 @@
     "cancel": "Annulla",
     "delete": "Elimina",
     "confirm": "Conferma",
+    "ok": "OK",
     "save": "Salva",
     "saveChanges": "Salva modifiche"
   },

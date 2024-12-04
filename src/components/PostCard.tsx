@@ -20,6 +20,7 @@ import axios from 'axios';
 
 interface PostCardProps {
   post: GetAllPostsResponse;
+  blur?: boolean;
 }
 
 const sliderSettings = {
@@ -30,7 +31,7 @@ const sliderSettings = {
   slidesToScroll: 1,
 };
 
-const PostCard: FC<PostCardProps> = ({ post }) => {
+const PostCard: FC<PostCardProps> = ({ post, blur }) => {
   const theme = useTheme();
 
   const user = useAuthStore((state) => state.user);
@@ -73,12 +74,18 @@ const PostCard: FC<PostCardProps> = ({ post }) => {
           <CardMedia
             component="img"
             height="200"
-            className="min-h-80 h-full w-full object-cover"
+            className={`${blur ? 'blur-lg' : ''} min-h-80 w-full h-full object-cover`}
             image={media.url}
             alt={`Media ${index + 1} for post ${post.id}`}
           />
         ) : (
-          <CardMedia component="video" height="200" src={media.url} controls />
+          <CardMedia
+            component="video"
+            height="200"
+            className={`${blur ? 'blur-lg' : ''} min-h-80 w-full`}
+            src={media.url}
+            controls
+          />
         )}
       </Box>
     ));
