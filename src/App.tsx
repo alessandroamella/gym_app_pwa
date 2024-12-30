@@ -17,6 +17,7 @@ import EditProfileScreen from './screens/EditProfileScreen';
 import { useTranslation } from 'react-i18next';
 import firebase from './firebase';
 import MotivationFeedScreen from './screens/MotivationFeedScreen';
+import RankingScreen from './screens/RankingScreen';
 import NotFoundScreen from './screens/NotFoundScreen';
 import AddPostScreen from './screens/AddPostScreen';
 
@@ -119,6 +120,14 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <MotivationFeedScreen />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ranking"
+              element={
+                <ProtectedRoute>
+                  <RankingScreen />
                 </ProtectedRoute>
               }
             />

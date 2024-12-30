@@ -134,9 +134,18 @@
   "navigation": {
     "feed": "Feed",
     "motivation": "Motivazione",
+    "ranking": "Classifica",
     "profile": "Profilo",
     "logout": "Logout",
     "login": "Login"
+  },
+  "rankings": {
+    "title": "Classifiche",
+    "user": "Utente",
+    "totalDuration": "Durata Totale",
+    "points": "Punti",
+    "loading": "Caricamento classifiche...",
+    "noRankings": "Nessuna classifica trovata."
   },
   "wall": {
     "title": "waa fratm!",

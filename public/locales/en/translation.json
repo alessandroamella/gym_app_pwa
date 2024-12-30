@@ -18,6 +18,14 @@
     "yesterday": "Yesterday",
     "timeAgo": "{{time}} ago"
   },
+  "rankings": {
+    "title": "Rankings",
+    "user": "User",
+    "totalDuration": "Total Duration",
+    "points": "Points",
+    "loading": "Loading rankings...",
+    "noRankings": "No rankings found."
+  },
   "auth": {
     "username": "Username",
     "password": "Password",
